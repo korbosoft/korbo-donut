@@ -20,7 +20,7 @@ include $(DEVKITARM)/gba_rules
 # the makefile is found
 #
 #---------------------------------------------------------------------------------
-TARGET		:= $(notdir $(CURDIR))_mb
+TARGET		:= demo_mb
 BUILD		:= build
 SOURCES		:= .
 INCLUDES	:= include
@@ -63,7 +63,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
 export ELFOUTPUT	:=	$(CURDIR)/$(TARGET)
-export GBAOUTPUT	:=	$(CURDIR)/../data/demo_mb
+export GBAOUTPUT	:=	$(CURDIR)/../data/$(TARGET)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 			$(foreach dir,$(DATA),$(CURDIR)/$(dir)) \

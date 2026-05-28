@@ -18,25 +18,25 @@ static void generate_padding(const char *input, const size_t resultingLength, ch
 	output[paddingNeeded] = '\0';
 }
 
-int format_info(const char *prefix, const char *input, char output[78], bool pad) {
-	char padding[82];
+int format_info(const char *prefix, const char *input, char output[79], bool pad) {
+	char padding[83];
 	if (pad) {
-		generate_padding(input, 76 - strlen(prefix), padding);
+		generate_padding(input, 77 - strlen(prefix), padding);
 	} else {
 		padding[0] = '\0';
 	}
 
-	snprintf(output, 77, "%s\e[4m%s%s", padding, prefix, input);
+	snprintf(output, 78, "%s\e[4m%s%s", padding, prefix, input);
 	return strlen(output);
 }
 
 void format_splash(const char *input, char *output) {
-	char padding[43];
-	generate_padding(input, 42, padding);
-	snprintf(output, 43, "%s%s", padding, input);
+	char padding[44];
+	generate_padding(input, 43, padding);
+	snprintf(output, 44, "%s%s", padding, input);
 }
 
-int print(const char *str) {
+inline int print(const char *str) {
 	return fwrite(str, strlen(str), 1, stdout);
 }
 

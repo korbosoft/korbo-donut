@@ -21,7 +21,7 @@ static GRRLIB_texImg *greyPixel;
 static GRRLIB_texImg *metalTex;
 static GRRLIB_texImg *colorMetalTex;
 static GRRLIB_texImg *spongeTex;
-static GRRLIB_texImg *sprinklesTex;
+// static GRRLIB_texImg *sprinklesTex;
 
 void draw_mapped_torus(f32 minor, f32 major, int nsides, int rings, bool filled, u32 col) {
 	const f32 ringDelta = 2.0 * M_PI / rings;
@@ -148,17 +148,18 @@ void donut_init(void) {
 	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
 	metalTex = GRRLIB_LoadTexturePNG(metal_png);
 	colorMetalTex = GRRLIB_LoadTexturePNG(coloredMetal_png);
-	spongeTex = GRRLIB_LoadTexturePNG(sprinkles_png);
-	sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
+	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
+	// sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 }
 
-void donut_exit(void) {
+void donut_free(void) {
 	GRRLIB_FreeTexture(shapeBuffer);
 	GRRLIB_FreeTexture(donutBuffer);
 	GRRLIB_FreeTexture(rainbowTex);
 	GRRLIB_FreeTexture(greyPixel);
 	GRRLIB_FreeTexture(metalTex);
 	GRRLIB_FreeTexture(colorMetalTex);
+	GRRLIB_FreeTexture(spongeTex);
 }
 
 static void set_tex(GRRLIB_texImg *tex, bool reflective) {
@@ -189,7 +190,7 @@ static void set_tex(GRRLIB_texImg *tex, bool reflective) {
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 }
 
-void render_frame(float A, float B, Donut flavor) {
+void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	Mtx model, model2, viewreflect;
 
 	guMtxCopy(view, viewreflect);
@@ -248,12 +249,13 @@ void render_frame(float A, float B, Donut flavor) {
 	char frameBuffer[DONUT_WIDTH*DONUT_HEIGHT*20 + 1];
 	char *ptr = frameBuffer;
 	u8 last_r = -1, last_g = -1, last_b = -1;
+	const char ramp[] = " -:=+<)%}Ics7fnCo3wmSd6VAXUK8R@Q"; // generated with tools/gen.py
 
 	print("\x1b[H");
 	for(u8 j = 0; j < DONUT_HEIGHT; j++) {
 		for(u8 i = 0; i < DONUT_WIDTH; i++) {
 			u16 lutIndex = 0;
-			u16 r_avg = 0, g_avg = 0, b_avg = 0;
+			u16 r_avg = 0, g_avg = 0, b_avg = 0, l_avg = 0;
 
 			for(u8 py = 0; py < 4; py++) {
 				for(u8 px = 0; px < 2; px++) {
@@ -267,13 +269,14 @@ void render_frame(float A, float B, Donut flavor) {
 					u8 sr = R(shape), sg = G(shape), sb = B(shape);
 
 					// u16 integer math for relative luminance,
-					// modified to reach exactly 65535 at the cost of accuracy
+					// modified to reach exactly 65535 at the cost of a little accuracy
 					u16 l = (sr*55 + sg*184 + sb*18);
 
 					u8 val = (l >> 14) & 0x03; // l >> 14 = (l/256)/64
 					u8 shift = (py*2 + px)*2;
 					lutIndex |= (val << shift);
 
+					l_avg += l >> 8;
 					r_avg += cr; g_avg += cg; b_avg += cb;
 				}
 			}
@@ -281,6 +284,7 @@ void render_frame(float A, float B, Donut flavor) {
 			r_avg >>= 3;
 			g_avg >>= 3;
 			b_avg >>= 3;
+			l_avg >>= 6;
 			// if (r_avg == 256) r_avg = 255;
 			// if (g_avg == 256) g_avg = 255;
 			// if (b_avg == 256) b_avg = 255;
@@ -297,7 +301,11 @@ void render_frame(float A, float B, Donut flavor) {
 					last_g = g_avg;
 					last_b = b_avg;
 				}
+				if (renderingType) {
+					*ptr++ = ramp[l_avg];
+				} else {
 					*ptr++ = shape_lut_bin[lutIndex];
+				}
 			} else {
 				*ptr++ = ' ';
 			}

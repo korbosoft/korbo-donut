@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 import numpy
 import struct
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     font = []
 
     try:
-        with open("console_font_8x16.c", 'r', encoding='cp437') as f:
+        with open("font.h", 'r', encoding='cp437') as f:
             current_bytes = []
             for line in f:
                 clean = re.sub(r'/\*.*?\*/', '', line)
@@ -56,19 +57,35 @@ if __name__ == "__main__":
                     if len(current_bytes) == 16:
                         font.append(list(current_bytes))
                         current_bytes = []
-        print(f'successfully read {len(font)} characters from font.')
+
+        print(f'successfully read {len(font)} characters from font. signature time')
     except FileNotFoundError:
-        print("console_font_8x16.c not found :(")
+        print("font.h not found :(")
         exit()
 
     sigs = get_signatures(font)
-    print('font signatures are done, making lut now...')
+    print('font signatures are done, making LUT now...')
 
     lut = create_ascii_lut(sigs)
-    print('saving lut...')
+    print('saving LUT...')
 
     with open("shape_lut.bin", "wb") as f:
         binary_data = struct.pack(f'{len(lut)}B', *lut)
         f.write(binary_data)
 
+    print('LUT saved to shape_lut.bin, making character ramp...')
+    densities = []
+    for i in range(32, 126):
+        on_pixels = sum(bin(byte).count('1') for byte in font[i])
+        densities.append({'char': chr(i), 'density': on_pixels})
+
+    densities.sort(key=lambda x: x['density'])
+
+    ramp = []
+    num_chars = len(densities)
+    for i in range(32):
+        index = int(i * (num_chars - 1) / 31)
+        ramp.append(densities[index]['char'])
+
+    print('const char ramp[] = "' + "".join(ramp) + '"; // generated with tools/gen.py')
     print('boobulation complete. Bye bye :)')

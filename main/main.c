@@ -28,18 +28,20 @@
 static void *cxfb = NULL;
 
 static bool paused = true;
+static bool renderingType = false;
 static u8 frostingFlavor = 0;
 
-#define SPLASH_COUNT 7
+#define SPLASH_COUNT 8
 
 static const char *splashMessages[SPLASH_COUNT] = {
 	[0] = "Also try DS Donut!",
-	[1] = "Also try Lily Skate!",
-	[2] = "Better than Wii Donut!",
-	[3] = "oh man please to help i am not good with c",
-	[4] = "(\"Doughnut\" if you're british)",
-	[5] = "Korbo loves you <3",
-	[6] = "Did you know you can change the music?",
+	[1] = "Also try 3DS Donut!",
+	[2] = "Also try Lily Skate!",
+	[3] = "Better than Wii Donut!",
+	[4] = "oh man please to help i am not good with c",
+	[5] = "(\"Doughnut\" if you're british)",
+	[6] = "Korbo loves you <3",
+	[7] = "Did you know you can change the music?",
 };
 
 static void send_donut(void) {
@@ -47,12 +49,12 @@ static void send_donut(void) {
 	music_pause(true);
 
 	print("\x1b[23;0H" "\x1b[0;0m\x1b[40;37m" "\x1b[104;37m"
-	"╔═══════════════════════════════════════════════════════════════════════════╗"
+	"╔════════════════════════════════════════════════════════════════════════════╗"
 	"║ \x1b[4mGBA Donut\x1b[0;0m\x1b[104;37m ┌─┐ Connect your GBA to controller port     " STRING_CANCEL " ║"
-	"║           │\xfb│ 4 with a GBA link cable.             ╒═──═╕                 ║"
-	"║           │4│                                      │+░░∞│                 ║"
-	"║           └─┘                                      └────┘      Waiting... ║"
-	"╚═══════════════════════════════════════════════════════════════════════════╝\x1b[0m");
+	"║           │\xe9│ 4 with a GBA link cable.             ╒═──═╕                  ║"
+	"║           │4│                                      │+░░∞│                  ║"
+	"║           └─┘                                      └────┘       Waiting... ║"
+	"╚════════════════════════════════════════════════════════════════════════════╝\x1b[0m");
 
 	while (!is_gba_present()) {
 		input_scan();
@@ -64,32 +66,34 @@ static void send_donut(void) {
 	}
 
 	print("\x1b[23;0H" "\x1b[104;37m"
-	"╔═══════════════════════════════════════════════════════════════════════════╗"
-	"║ \x1b[4mGBA Donut\x1b[0m\x1b[104;37m ┌─┐╔═══════════════════════════════════════╗                    ║"
-	"║           │\xfc╪╝                                     ╒═╨─═╕                 ║"
-	"║           │4│                                      │+▒▒∞│                 ║"
-	"║           └─┘                                      └────┘ Transferring... ║"
-	"╚═══════════════════════════════════════════════════════════════════════════╝\x1b[0m");
+	"╔════════════════════════════════════════════════════════════════════════════╗"
+	"║ \x1b[4mGBA Donut\x1b[0m\x1b[104;37m ┌─┐╔═══════════════════════════════════════╗                     ║"
+	"║           │\xe9╪╝                                     ╒═╨─═╕                  ║"
+	"║           │4│                                      │+▒▒∞│                  ║"
+	"║           └─┘                                      └────┘  Transferring... ║"
+	"╚════════════════════════════════════════════════════════════════════════════╝\x1b[0m");
 
 	gba_send();
 
 	print("\x1b[23;0H" "\x1b[104;37m"
-	"╔═══════════════════════════════════════════════════════════════════════════╗"
-	"║ \x1b[4mGBA Donut\x1b[0m\x1b[104;37m ┌─┐╔══════════════════√════════════════════╗                    ║"
-	"║           │\xfc╪╝                                     ╒═╨─═╕                 ║"
-	"║           │4│                                      │+▓▓∞│                 ║"
-	"║           └─┘                                      └────┘        Success! ║"
-	"╚═══════════════════════════════════════════════════════════════════════════╝\x1b[0m");
+	"╔════════════════════════════════════════════════════════════════════════════╗"
+	"║ \x1b[4mGBA Donut\x1b[0m\x1b[104;37m ┌─┐╔══════════════════√════════════════════╗                     ║"
+	"║           │\xe9╪╝                                     ╒═╨─═╕                  ║"
+	"║           │4│                                      │+▓▓∞│                  ║"
+	"║           └─┘                                      └────┘         Success! ║"
+	"╚════════════════════════════════════════════════════════════════════════════╝\x1b[0m");
 
 	sleep(3);
 	music_pause(!prevPaused);
 }
 
 int main(int argc,char **argv) {
-	char splash[43], title[82], frostingName[82], doughName[82];
+	char splash[44], title[83], frostingName[83], doughName[83];
 	bool showControls = false;
 	guVector lpos = {2.0f, 2.0f, 2.0f};
 	GXLightObj lobj;
+
+	srand(time(NULL));
 
 	GRRLIB_Init();
 
@@ -103,11 +107,10 @@ int main(int argc,char **argv) {
 
 	// Allocate memory for the display in the uncached region
 	cxfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 	GRRLIB_FillScreen(0x000000FF);
 
 	// Initialise the console, required for printf
-	console_init(cxfb,20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
+	CON_Init(cxfb, 8,16, rmode->fbWidth - 8,rmode->xfbHeight, rmode->fbWidth*VI_DISPLAY_PIX_SZ);
 	consoleSetFont(NULL, &(ConsoleFont){(u8*)donut_font_8x16, 0, 256});
 	//SYS_STDIO_Report(true);
 	VIDEO_SetNextFramebuffer(cxfb);
@@ -122,8 +125,7 @@ int main(int argc,char **argv) {
 
 	float donAspect = aspect;
 
-	donAspect *= 77.0f / 44.0f; // effectively halves the width to match the character aspect
-	// char boobs[] = " -:=+>|%}Ics1aeCo34wSZkhAE&D$HWQ";
+	donAspect *= 78.0f / 44.0f; // effectively halves the width to match the character aspect
 
 	int titleLength = music_init(title);
 	int frostingLength;
@@ -141,8 +143,10 @@ int main(int argc,char **argv) {
 		format_splash("This splash has a 1/50 chance of appearing", splash);
 	}
 
-	u8 showFrosting = 0;
 	GX_SetCullMode(GX_CULL_FRONT);
+	VIDEO_ClearFrameBuffer(rmode, cxfb, 0x00800080);
+
+	u8 showFrosting = 0;
 	while(SYS_MainLoop()) {
 		GX_SetNumChans(1);
 		guVecMultiply(view, &lpos, &lpos);
@@ -155,7 +159,7 @@ int main(int argc,char **argv) {
 		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKER);
 		GX_SetChanCtrl(GX_COLOR0A0, GX_ENABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT0, GX_DF_CLAMP, GX_AF_NONE);
 
-		render_frame(A, B, frosting[frostingFlavor]);
+		render_frame(A, B, frosting[frostingFlavor], renderingType);
 
 		input_scan();
 		input_down(0, 0);
@@ -166,12 +170,12 @@ int main(int argc,char **argv) {
 
 		} else {
 			printf("\x1b[23H" "\x1b[104;37m"
-			"╔═══════════════════════════════════════════════════════════════════════════╗"
-			"║ \x1b[4mKorbo's Donut Shop :3 %s   %s\x1b[0m\x1b[104;37m "                "║"
-			"║ Inspired by \"Wii Donut\" by emilydaemon <emilydaemon@donut.eu.org>         ║"
-			"║ Written, and otherwise created by Korbo Q. Lamp                           ║"
-			"║ Default Music is \"Addiction\" by Jogeir Liljedahl  " STRING_CONTROLS   " ║"
-			"╚═══════════════════════════════════════════════════════════════════════════╝\x1b[40m", VERSION, splash);
+			"╔════════════════════════════════════════════════════════════════════════════╗"
+			"║ \x1b[4mKorbo's Donut Shop :3 %s   %s\x1b[0m\x1b[104;37m "                 "║"
+			"║ Originally based off \"Wii Donut\" by emilydaemon                            ║"
+			"║ Written, and otherwise created by Korbo Q. Lamp                            ║"
+			"║ Default Music is \"Addiction\" by Jogeir Liljedahl   " STRING_CONTROLS   " ║"
+			"╚════════════════════════════════════════════════════════════════════════════╝\x1b[40m", VERSION, splash);
 			// printf("cwd: %s\n", getcwd(NULL, 0));
 		}
 
@@ -179,7 +183,7 @@ int main(int argc,char **argv) {
 			showFrosting--;
 
 		frostingLength = format_info("Flavor: ", frosting[frostingFlavor].name, frostingName, false);
-		printf("\x1b[0;%iH" "%s" "\x1b[0;0m", 82 - (showFrosting ? frostingLength : titleLength), showFrosting ? frostingName : title);
+		printf("\x1b[0;%iH" "%s" "\x1b[0;0m", 83 - (showFrosting ? frostingLength : titleLength), showFrosting ? frostingName : title);
 
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
@@ -190,6 +194,7 @@ int main(int argc,char **argv) {
 		} else if ((wiiPressed & WPAD_BUTTON_MINUS) | (GCPressed & PAD_BUTTON_X)) {
 			// bgColor++;
 			// bgColor %= 7;
+			renderingType = !renderingType;
 		} else if ((wiiPressed & WPAD_BUTTON_PLUS) | (GCPressed & PAD_BUTTON_Y)) {
 			frostingFlavor++;
 			frostingFlavor %= FROSTING_FLAVORS;
@@ -205,7 +210,7 @@ int main(int argc,char **argv) {
 	}
 
 	GRRLIB_2dMode();
-	donut_exit();
+	donut_free();
 	GRRLIB_Exit();
 	music_free();
 	exit(0);
