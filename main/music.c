@@ -68,11 +68,7 @@ int music_init(char *title_display) {
 	FILE *f;
 	f = file_open(tmp, "rb");
 
-	#ifndef GC
-	GRRMOD_Init(CONF_GetSoundMode()); // check for mono
-	#else
 	GRRMOD_Init(SYS_GetSoundMode()); // check for mono
-	#endif
 	if (f) {
 		fseek(f, 0, SEEK_END);
 		long module_size = ftell(f);

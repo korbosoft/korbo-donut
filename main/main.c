@@ -116,7 +116,7 @@ int main(int argc,char **argv) {
 	VIDEO_SetNextFramebuffer(cxfb);
 
 	// setup our projection matrix
-	float aspect = 4.0f/3.0f;
+	float aspect = VIDEO_GetAspectRatio();
 	// if (CONF_GetAspectRatio() == CONF_ASPECT_16_9) {
 	// 	aspect = 16.0f/9.0f;
 	// } else {
@@ -159,6 +159,7 @@ int main(int argc,char **argv) {
 		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKER);
 		GX_SetChanCtrl(GX_COLOR0A0, GX_ENABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT0, GX_DF_CLAMP, GX_AF_NONE);
 
+		PROXY_3dMode(0.1F, 300.0F, 45, true, true, donAspect);
 		render_frame(A, B, frosting[frostingFlavor], renderingType);
 
 		input_scan();
