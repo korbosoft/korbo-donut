@@ -8,7 +8,6 @@
 #include <gcmodplay.h>
 #include <grrlib.h>
 
-#include "colors.h"
 #include "donut.h"
 #include "file.h"
 #include "grrproxy.h"
@@ -38,7 +37,7 @@ static const char *splashMessages[SPLASH_COUNT] = {
 	[1] = "Also try 3DS Donut!",
 	[2] = "Also try Lily Skate!",
 	[3] = "Better than Wii Donut!",
-	[4] = "oh man please to help i am not good with c",
+	[4] = "oh man please to help i am not good with co",
 	[5] = "(\"Doughnut\" if you're british)",
 	[6] = "Korbo loves you <3",
 	[7] = "Did you know you can change the music?",
@@ -116,7 +115,8 @@ int main(int argc,char **argv) {
 	VIDEO_SetNextFramebuffer(cxfb);
 
 	// setup our projection matrix
-	float aspect = VIDEO_GetAspectRatio();
+	float aspect = 4.0 / 3.0f;
+	// float aspect = VIDEO_GetAspectRatio();
 	// if (CONF_GetAspectRatio() == CONF_ASPECT_16_9) {
 	// 	aspect = 16.0f/9.0f;
 	// } else {
@@ -152,14 +152,12 @@ int main(int argc,char **argv) {
 		guVecMultiply(view, &lpos, &lpos);
 
 		GX_InitLightPos(&lobj,lpos.x,lpos.y,lpos.z);
-		GX_InitLightColor(&lobj, LC_WHITE);
+		GX_InitLightColor(&lobj, DONUT_LIGHT);
 		GX_InitLightDistAttn(&lobj, 0.5f, 0.5f, GX_DA_MEDIUM);
 		GX_LoadLightObj(&lobj,GX_LIGHT0);
-
-		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKER);
+		GX_SetChanAmbColor(GX_COLOR0A0, renderingType ? LC_DARKDARKDARK : LC_DARKER);
 		GX_SetChanCtrl(GX_COLOR0A0, GX_ENABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT0, GX_DF_CLAMP, GX_AF_NONE);
 
-		PROXY_3dMode(0.1F, 300.0F, 45, true, true, donAspect);
 		render_frame(A, B, frosting[frostingFlavor], renderingType);
 
 		input_scan();

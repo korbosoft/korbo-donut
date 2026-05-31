@@ -2,6 +2,7 @@
 #include <math.h>
 #include <grrlib.h>
 
+#include "colors.h"
 #include "donut.h"
 #include "flavors.h"
 #include "grrproxy.h"
@@ -215,13 +216,19 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 
 	set_tex(greyPixel, false);
 
-	draw_mapped_torus(1, 2, 32, 64, true, 0xFFFFFFFF);
+	if (renderingType)
+		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKDARKDARK);
+
+	draw_mapped_torus(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, 0xFFFFFFFF);
 	if (flavor.texture == NONE)
-		draw_frosting(1, 2, 32, 64, true, 0xFFFFFFFF);
+		draw_frosting(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, 0xFFFFFFFF);
 
 	GX_SetViewport(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4);
 	GRRLIB_Screen2Texture(0, 0, shapeBuffer, true);
+
+	if (renderingType)
+		GX_SetChanAmbColor(GX_COLOR0A0, DONUT_LIGHT);
 
 	switch (flavor.texture) {
 		case RAINBOW:
@@ -240,9 +247,9 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 			set_tex(greyPixel, false);
 	}
 
-	draw_mapped_torus(1, 2, 32, 64, true, RGBA(flavor.bottom.r, flavor.bottom.g, flavor.bottom.b, flavor.bottom.a));
+	draw_mapped_torus(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, RGBA(flavor.bottom.r, flavor.bottom.g, flavor.bottom.b, flavor.bottom.a));
 	if (flavor.texture == NONE)
-		draw_frosting(1, 2, 32, 64, true, RGBA(flavor.top.r, flavor.top.g, flavor.top.b, flavor.top.a));
+		draw_frosting(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, RGBA(flavor.top.r, flavor.top.g, flavor.top.b, flavor.top.a));
 
 	GRRLIB_Screen2Texture(0, 0, donutBuffer, true);
 
@@ -266,17 +273,13 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 					u32 shape = GRRLIB_GetPixelFromtexImg(img_x, img_y, shapeBuffer);
 
 					u8 cr = R(col), cg = G(col), cb = B(col);
-					u8 sr = R(shape), sg = G(shape), sb = B(shape);
-
-					// u16 integer math for relative luminance,
-					// modified to reach exactly 65535 at the cost of a little accuracy
-					u16 l = (sr*55 + sg*184 + sb*18);
-
-					u8 val = (l >> 14) & 0x03; // l >> 14 = (l/256)/64
+					u8 l = G(shape);
+					// no luminance check needed because shape buffer should always be greyscale
+					u8 val = (l >> 6) & 0x03;
 					u8 shift = (py*2 + px)*2;
 					lutIndex |= (val << shift);
 
-					l_avg += l >> 8;
+					l_avg += l;
 					r_avg += cr; g_avg += cg; b_avg += cb;
 				}
 			}

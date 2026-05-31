@@ -1,6 +1,8 @@
+// liy colors
+
 #ifndef COLORS_H
 #define COLORS_H
- 
+
 static const GXColor LC_WHITE  = {255, 255, 255, 255}; //"liy color"
 static const GXColor LC_RED    = {255, 0,   0,   255};
 static const GXColor LC_GREEN  = {0,   255, 0,   255};
@@ -25,7 +27,7 @@ static const GXColor LC_GAYSKY = {99, 131, 171, 255};//148 196 255
 static const GXColor LC_CAFEAM = {133, 135, 171, 255};
 static const GXColor LC_RIMTILT= {180, 180, 196, 255};
 
-GXColor colorMul(GXColor a, GXColor b) {
+static inline GXColor colorMul(GXColor a, GXColor b) {
 	float ar, ag, ab, aa, br, bg, bb, ba;
 	ar = (float)a.r * 0.003921568627;
 	ag = (float)a.g * 0.003921568627;
@@ -36,7 +38,7 @@ GXColor colorMul(GXColor a, GXColor b) {
 	bg = (float)b.g * 0.003921568627;
 	bb = (float)b.b * 0.003921568627;
 	ba = (float)b.a * 0.003921568627;
-	
+
 	ar *= br;
 	ag *= bg;
 	ab *= bb;

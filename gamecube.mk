@@ -7,4 +7,6 @@ CXXFLAGS	=	$(CFLAGS)
 
 LIBS		:=	-lfat -lgrrmod -laesnd -lgrrlib -lpngu `$(PREFIX)pkg-config freetype2 libpng libjpeg --libs` -lfat -laesnd -logc -lm
 
+LIBDIRS	:= $(PORTLIBS)
+
 export OUTPUT	:=	$(abspath $(dir $(firstword $(MAKEFILE_LIST))))/donut-gc
