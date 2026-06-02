@@ -11,7 +11,7 @@
 #include "shape_lut_bin.h"
 
 #include "metal_png.h"
-#include "coloredMetal_png.h"
+#include "tintedMetal_png.h"
 #include "sponge_png.h"
 #include "sprinkles_png.h"
 
@@ -20,9 +20,12 @@ static GRRLIB_texImg *donutBuffer;
 static GRRLIB_texImg *rainbowTex;
 static GRRLIB_texImg *greyPixel;
 static GRRLIB_texImg *metalTex;
-static GRRLIB_texImg *colorMetalTex;
+static GRRLIB_texImg *tintedMetalTex;
 static GRRLIB_texImg *spongeTex;
+static GRRLIB_texImg *munchTex;
 // static GRRLIB_texImg *sprinklesTex;
+
+static u16 anim_timer;
 
 void draw_mapped_torus(f32 minor, f32 major, int nsides, int rings, bool filled, u32 col) {
 	const f32 ringDelta = 2.0 * M_PI / rings;
@@ -40,7 +43,7 @@ void draw_mapped_torus(f32 minor, f32 major, int nsides, int rings, bool filled,
 		const f32 u1 = (f32)(i + 1) / rings;
 
 		GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(nsides + 1));
-		f32 phi = 0.0f;
+		f32 phi = M_PI;
 		for (int j = 0; j <= nsides; j++) {
 			const f32 cosPhi = cosf(phi), sinPhi = sinf(phi);
 			const f32 dist = major + minor*cosPhi;
@@ -50,12 +53,12 @@ void draw_mapped_torus(f32 minor, f32 major, int nsides, int rings, bool filled,
 			GX_Position3f32(cosTheta1*dist, -sinTheta1*dist, minor*sinPhi);
 			GX_Normal3f32(cosTheta1*cosPhi, -sinTheta1*cosPhi, sinPhi);
 			GX_Color1u32(col);
-			GX_TexCoord2f32(u1, v);
+			GX_TexCoord2f32(u0, v);
 
 			GX_Position3f32(cosTheta*dist, -sinTheta*dist, minor*sinPhi);
 			GX_Normal3f32(cosTheta*cosPhi, -sinTheta*cosPhi, sinPhi);
 			GX_Color1u32(col);
-			GX_TexCoord2f32(u0, v);
+			GX_TexCoord2f32(u1, v);
 
 			phi += sideDelta;
 		}
@@ -141,6 +144,20 @@ static GRRLIB_texImg *makeRainbowTex(u16 width, u16 height) {
 	return tex;
 }
 
+static void genMunchTex(GRRLIB_texImg *tex, u16 t) {
+	const u8 time_1 = t;
+	const u8 time_2 = t/2;
+	const u8 time_3 = t/3;
+	for (u16 y = 0; y < tex->h; y++) {
+		for (u16 x = 0; x < tex->w; x++) {
+			u8 r = x ^ (y - time_1);
+			u8 g = (x ^ y) + time_2;
+			u8 b = x ^ (y + time_3);
+			GRRLIB_SetPixelTotexImg(x, y, tex, RGBA(r, g, b, 255));
+		}
+	}
+}
+
 void donut_init(void) {
 	shapeBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
 	donutBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
@@ -148,8 +165,9 @@ void donut_init(void) {
 	greyPixel = GRRLIB_CreateEmptyTexture(1, 1);
 	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
 	metalTex = GRRLIB_LoadTexturePNG(metal_png);
-	colorMetalTex = GRRLIB_LoadTexturePNG(coloredMetal_png);
+	tintedMetalTex = GRRLIB_LoadTexturePNG(tintedMetal_png);
 	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
+	munchTex = GRRLIB_CreateEmptyTexture(128, 128);
 	// sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 }
 
@@ -159,8 +177,10 @@ void donut_free(void) {
 	GRRLIB_FreeTexture(rainbowTex);
 	GRRLIB_FreeTexture(greyPixel);
 	GRRLIB_FreeTexture(metalTex);
-	GRRLIB_FreeTexture(colorMetalTex);
+	GRRLIB_FreeTexture(tintedMetalTex);
 	GRRLIB_FreeTexture(spongeTex);
+	GRRLIB_FreeTexture(munchTex);
+	// GRRLIB_FreeTexture(sprinklesTex);
 }
 
 static void set_tex(GRRLIB_texImg *tex, bool reflective) {
@@ -230,6 +250,8 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, DONUT_LIGHT);
 
+	anim_timer = (anim_timer + 1) % (256 * 6);
+	genMunchTex(munchTex, anim_timer);
 	switch (flavor.texture) {
 		case RAINBOW:
 			set_tex(rainbowTex, true);
@@ -237,11 +259,14 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 		case METAL:
 			set_tex(metalTex, true);
 			break;
-		case COLORED_METAL:
-			set_tex(colorMetalTex, true);
+		case TINTED_METAL:
+			set_tex(tintedMetalTex, true);
 			break;
 		case SPONGE:
 			set_tex(spongeTex, false);
+			break;
+		case MUNCH:
+			set_tex(munchTex, false);
 			break;
 		default:
 			set_tex(greyPixel, false);

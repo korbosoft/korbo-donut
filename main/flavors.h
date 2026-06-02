@@ -1,7 +1,7 @@
 #ifndef FLAVORS_H
 #define FLAVORS_H
 
-#define FROSTING_FLAVORS 21
+#define FROSTING_FLAVORS 22
 
 enum DonutSpecial {
 	NORMAL,
@@ -11,9 +11,10 @@ enum DonutSpecial {
 enum DonutTexture {
 	NONE,
 	RAINBOW,
-	COLORED_METAL,
+	TINTED_METAL,
 	METAL,
-	SPONGE
+	SPONGE,
+	MUNCH
 };
 
 typedef struct {
@@ -135,7 +136,7 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 		{0, 255, 0, 255},
 		{0, 255, 0, 255},
 		NORMAL,
-		COLORED_METAL
+		TINTED_METAL
 	},
 	{
 		"Rainbow",
@@ -156,14 +157,14 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 		{255, 255, 0, 255},
 		{255, 255, 0, 255},
 		NORMAL,
-		COLORED_METAL
+		TINTED_METAL
 	},
 	{
 		"Aluminum",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
 		NORMAL,
-		COLORED_METAL
+		TINTED_METAL
 	},
 	{
 		"Sponge",
@@ -171,6 +172,13 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		NORMAL,
 		SPONGE
+	},
+	{
+		"TBD",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		NORMAL,
+		MUNCH
 	}
 };
 
