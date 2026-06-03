@@ -1,4 +1,4 @@
-include $(DEVKITPPC)/gamecube_rules
+include $(DEVKITPRO)/libogc2/gamecube_rules
 
 BUILD		:=	build-gc
 
