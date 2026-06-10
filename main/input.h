@@ -3,12 +3,6 @@
 
 #include <ogcsys.h>
 
-#ifndef GC
-#include <wiiuse/wpad.h>
-#else
-#include <ogc/pad.h>
-#endif
-
 extern u32 wiiPressed;
 extern u16 GCPressed;
 

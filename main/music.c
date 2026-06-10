@@ -3,6 +3,8 @@
 #include <string.h>
 #include <grrmod.h>
 
+#include <aesndlib.h>
+
 #include "music.h"
 
 #include "file.h"

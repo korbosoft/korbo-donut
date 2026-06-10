@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
 	<name>Korbo's Donut Shop</name>
-	<version>5.4.0</version>
-	<release_date>20260530000000</release_date>
+	<version>5.5.1</version>
+	<release_date>20260609000000</release_date>
 	<!-- date format is YYYYMMDD000000-->
 	<coder>Korbosoft</coder>
 	<short_description>Korbo's spinning donut!</short_description>
 	<long_description>Korbo's world-famous* donut shop is always open!
 
-*Donut shop may or may not actually be world-famous.
+*Donut shop might not actually be "world-famous".
 None of this would have ever happened without "Wii Donut" by emilydaemon, and
 xOx-Liy-Codez-XD-oXo helped me a ton getting this to initially work.
-
-GBA Donut requires a GBA link cable plugged in the 4th controller port.
 
 Music can be changed by adding a "music.(mod/it/s3m/xm/whatever)" file in the app directory.
 This program supports *most* tracker music formats. https://modarchive.org is a good source.

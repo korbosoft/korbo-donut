@@ -1,5 +1,7 @@
 #include "file.h"
 
+#include <fat.h>
+
 int fatInitResult;
 
 void file_init(void) {

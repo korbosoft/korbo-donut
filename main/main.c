@@ -13,7 +13,6 @@
 #include "grrproxy.h"
 #include "input.h"
 #include "font.h"
-#include "gba.h"
 #include "strings.h"
 #include "text.h"
 #include "flavors.h"
@@ -30,63 +29,7 @@ static bool paused = true;
 static bool renderingType = false;
 static u8 frostingFlavor = 0;
 
-#define SPLASH_COUNT 8
-
-static const char *splashMessages[SPLASH_COUNT] = {
-	[0] = "Also try DS Donut!",
-	[1] = "Also try 3DS Donut!",
-	[2] = "Also try Lily Skate!",
-	[3] = "Better than Wii Donut!",
-	[4] = "oh man please to help i am not good with co",
-	[5] = "(\"Doughnut\" if you're british)",
-	[6] = "Korbo loves you <3",
-	[7] = "Did you know you can change the music?",
-};
-
-static void send_donut(void) {
-	bool prevPaused = paused;
-	music_pause(true);
-
-	print("\x1b[23;0H" "\x1b[0;0m\x1b[40;37m" "\x1b[104;37m"
-	"╔════════════════════════════════════════════════════════════════════════════╗"
-	"║ \x1b[4mGBA Donut\x1b[0;0m\x1b[104;37m ┌─┐ Connect your GBA to controller port     " STRING_CANCEL " ║"
-	"║           │\xe9│ 4 with a GBA link cable.             ╒═──═╕                  ║"
-	"║           │4│                                      │+░░∞│                  ║"
-	"║           └─┘                                      └────┘       Waiting... ║"
-	"╚════════════════════════════════════════════════════════════════════════════╝\x1b[0m");
-
-	while (!is_gba_present()) {
-		input_scan();
-		input_down(0, 0);
-		if ((wiiPressed & WPAD_BUTTON_PLUS) | (GCPressed & PAD_BUTTON_Y)) {
-			music_pause(!prevPaused);
-			return;
-		}
-	}
-
-	print("\x1b[23;0H" "\x1b[104;37m"
-	"╔════════════════════════════════════════════════════════════════════════════╗"
-	"║ \x1b[4mGBA Donut\x1b[0m\x1b[104;37m ┌─┐╔═══════════════════════════════════════╗                     ║"
-	"║           │\xe9╪╝                                     ╒═╨─═╕                  ║"
-	"║           │4│                                      │+▒▒∞│                  ║"
-	"║           └─┘                                      └────┘  Transferring... ║"
-	"╚════════════════════════════════════════════════════════════════════════════╝\x1b[0m");
-
-	gba_send();
-
-	print("\x1b[23;0H" "\x1b[104;37m"
-	"╔════════════════════════════════════════════════════════════════════════════╗"
-	"║ \x1b[4mGBA Donut\x1b[0m\x1b[104;37m ┌─┐╔══════════════════√════════════════════╗                     ║"
-	"║           │\xe9╪╝                                     ╒═╨─═╕                  ║"
-	"║           │4│                                      │+▓▓∞│                  ║"
-	"║           └─┘                                      └────┘         Success! ║"
-	"╚════════════════════════════════════════════════════════════════════════════╝\x1b[0m");
-
-	sleep(3);
-	music_pause(!prevPaused);
-}
-
-int main(int argc,char **argv) {
+int main(int argc, char **argv) {
 	char splash[44], title[83], frostingName[83], doughName[83];
 	bool showControls = false;
 	guVector lpos = {2.0f, 2.0f, 2.0f};
@@ -98,8 +41,6 @@ int main(int argc,char **argv) {
 
 	input_init();
 	// WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC);
-
-	gba_init();
 
 	// Initialize the file... thing. I can't really call it the "file system", can I?
 	file_init();
@@ -168,13 +109,7 @@ int main(int argc,char **argv) {
 			// } else if (showFrosting) {
 
 		} else {
-			printf("\x1b[23H" "\x1b[104;37m"
-			"╔════════════════════════════════════════════════════════════════════════════╗"
-			"║ \x1b[4mKorbo's Donut Shop :3 %s   %s\x1b[0m\x1b[104;37m "                 "║"
-			"║ Originally based off \"Wii Donut\" by emilydaemon                            ║"
-			"║ Written, and otherwise created by Korbo Q. Lamp                            ║"
-			"║ Default Music is \"Addiction\" by Jogeir Liljedahl   " STRING_CONTROLS   " ║"
-			"╚════════════════════════════════════════════════════════════════════════════╝\x1b[40m", VERSION, splash);
+			printf("\x1b[23H" "\x1b[104;37m" STRING_MAIN_BOX "\x1b[40m", VERSION, splash);
 			// printf("cwd: %s\n", getcwd(NULL, 0));
 		}
 
@@ -187,7 +122,7 @@ int main(int argc,char **argv) {
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
 		if ((wiiPressed & WPAD_BUTTON_1) | (GCPressed & PAD_TRIGGER_Z)) {
-			send_donut();
+			// send_donut();
 		} else if ((wiiPressed & WPAD_BUTTON_2) | (GCPressed & PAD_BUTTON_B)) {
 			showControls = !showControls;
 		} else if ((wiiPressed & WPAD_BUTTON_MINUS) | (GCPressed & PAD_BUTTON_X)) {

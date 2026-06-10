@@ -1,7 +1,7 @@
 #ifndef FLAVORS_H
 #define FLAVORS_H
 
-#define FROSTING_FLAVORS 22
+#define FROSTING_FLAVORS 23
 
 enum DonutSpecial {
 	NORMAL,
@@ -11,6 +11,7 @@ enum DonutSpecial {
 enum DonutTexture {
 	NONE,
 	RAINBOW,
+	RAINBOW_PASTEL,
 	TINTED_METAL,
 	METAL,
 	SPONGE,
@@ -140,10 +141,17 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 	},
 	{
 		"Rainbow",
+		{128, 128, 128, 255},
+		{128, 128, 128, 255},
+		NORMAL,
+		RAINBOW
+	},
+	{
+		"Pastel",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
 		NORMAL,
-		RAINBOW
+		RAINBOW_PASTEL
 	},
 	{
 		"Chrome",
@@ -174,7 +182,7 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 		SPONGE
 	},
 	{
-		"TBD",
+		"Holographic",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
 		NORMAL,

@@ -1,5 +1,11 @@
 #include "input.h"
 
+#ifndef GC
+#include <wiiuse/wpad.h>
+#else
+#include <ogc/pad.h>
+#endif
+
 u32 wiiPressed;
 u16 GCPressed;
 

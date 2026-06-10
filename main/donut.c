@@ -4,7 +4,6 @@
 
 #include "colors.h"
 #include "donut.h"
-#include "flavors.h"
 #include "grrproxy.h"
 #include "text.h"
 
@@ -13,7 +12,7 @@
 #include "metal_png.h"
 #include "tintedMetal_png.h"
 #include "sponge_png.h"
-#include "sprinkles_png.h"
+// #include "sprinkles_png.h"
 
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
@@ -25,7 +24,8 @@ static GRRLIB_texImg *spongeTex;
 static GRRLIB_texImg *munchTex;
 // static GRRLIB_texImg *sprinklesTex;
 
-static u16 anim_timer;
+static u16 munch_timer;
+static u16 rainbow_timer;
 
 void draw_mapped_torus(f32 minor, f32 major, int nsides, int rings, bool filled, u32 col) {
 	const f32 ringDelta = 2.0 * M_PI / rings;
@@ -53,12 +53,12 @@ void draw_mapped_torus(f32 minor, f32 major, int nsides, int rings, bool filled,
 			GX_Position3f32(cosTheta1*dist, -sinTheta1*dist, minor*sinPhi);
 			GX_Normal3f32(cosTheta1*cosPhi, -sinTheta1*cosPhi, sinPhi);
 			GX_Color1u32(col);
-			GX_TexCoord2f32(u0, v);
+			GX_TexCoord2f32(u1, v);
 
 			GX_Position3f32(cosTheta*dist, -sinTheta*dist, minor*sinPhi);
 			GX_Normal3f32(cosTheta*cosPhi, -sinTheta*cosPhi, sinPhi);
 			GX_Color1u32(col);
-			GX_TexCoord2f32(u1, v);
+			GX_TexCoord2f32(u0, v);
 
 			phi += sideDelta;
 		}
@@ -126,22 +126,34 @@ static void draw_frosting(f32 minor, f32 major, int nsides, int rings, bool fill
 	}
 }
 
-static GRRLIB_texImg *makeRainbowTex(u16 width, u16 height) {
-	GRRLIB_texImg *tex = GRRLIB_CreateEmptyTexture(width, height);
+static void makeRainbowTex(GRRLIB_texImg *tex, u16 t) {
+	const u16 width = tex->w;
+	const u16 height = tex->h;
+
+	const f32 center_x = (width - 1) / 2.0f;
+	const f32 center_y = (height - 1) / 2.0f;
+	const f32 scale = 2.0f / height;
+
 	for (u16 j = 0; j < height; j++) {
+		f32 y = j - center_y;
+		f32 y2 = y*y;
+
 		for (u16 i = 0; i < width; i++) {
-			f32 x = i - width/2.0f, y = j - height/2.0f;
-			f32 p = -(sqrt(x*x + y*y) + 0.5f)*3.0f/height;
+			f32 x = i - center_x;
+
+			f32 p = -(sqrtf(x*x + y2) - (f32)t/8.0f)*scale;
+
 			f32 r = sinf(M_PI*p);
 			f32 g = sinf(M_PI*(p + (1.0f/3.0f)));
 			f32 b = sinf(M_PI*(p + (2.0f/3.0f)));
-			r *= r*255;
-			g *= g*255;
-			b *= b*255;
-			GRRLIB_SetPixelTotexImg(i, j, tex, RGBA(r, g, b, 255));
+
+			GRRLIB_SetPixelTotexImg(i, j, tex,
+									RGBA((u8)(r*r*255),
+										 (u8)(g*g*255),
+										 (u8)(b*b*255),
+										 255));
 		}
 	}
-	return tex;
 }
 
 static void genMunchTex(GRRLIB_texImg *tex, u16 t) {
@@ -161,7 +173,7 @@ static void genMunchTex(GRRLIB_texImg *tex, u16 t) {
 void donut_init(void) {
 	shapeBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
 	donutBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
-	rainbowTex = makeRainbowTex(256, 256);
+	rainbowTex = GRRLIB_CreateEmptyTexture(12, 12);
 	greyPixel = GRRLIB_CreateEmptyTexture(1, 1);
 	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
 	metalTex = GRRLIB_LoadTexturePNG(metal_png);
@@ -239,8 +251,11 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKDARKDARK);
 
+	u32 top = RGBA(flavor.top.r, flavor.top.g, flavor.top.b, flavor.top.a);
+	u32 bottom = RGBA(flavor.bottom.r, flavor.bottom.g, flavor.bottom.b, flavor.bottom.a);
+
 	draw_mapped_torus(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, 0xFFFFFFFF);
-	if (flavor.texture == NONE)
+	if ((flavor.texture == NONE) && (top != bottom))
 		draw_frosting(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, 0xFFFFFFFF);
 
 	GX_SetViewport(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4, 0, 1);
@@ -250,10 +265,14 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, DONUT_LIGHT);
 
-	anim_timer = (anim_timer + 1) % (256 * 6);
-	genMunchTex(munchTex, anim_timer);
+	munch_timer = (munch_timer + 1) % (256*6);
+	rainbow_timer = (rainbow_timer + 1) % 48;
+	genMunchTex(munchTex, munch_timer);
+	makeRainbowTex(rainbowTex, rainbow_timer);
+
 	switch (flavor.texture) {
 		case RAINBOW:
+		case RAINBOW_PASTEL:
 			set_tex(rainbowTex, true);
 			break;
 		case METAL:
@@ -266,15 +285,15 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 			set_tex(spongeTex, false);
 			break;
 		case MUNCH:
-			set_tex(munchTex, false);
+			set_tex(munchTex, true);
 			break;
 		default:
 			set_tex(greyPixel, false);
 	}
 
-	draw_mapped_torus(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, RGBA(flavor.bottom.r, flavor.bottom.g, flavor.bottom.b, flavor.bottom.a));
-	if (flavor.texture == NONE)
-		draw_frosting(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, RGBA(flavor.top.r, flavor.top.g, flavor.top.b, flavor.top.a));
+	draw_mapped_torus(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, bottom);
+	if ((flavor.texture == NONE) & (top != bottom))
+		draw_frosting(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, top);
 
 	GRRLIB_Screen2Texture(0, 0, donutBuffer, true);
 
@@ -284,6 +303,7 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	const char ramp[] = " -:=+<)%}Ics7fnCo3wmSd6VAXUK8R@Q"; // generated with tools/gen.py
 
 	print("\x1b[H");
+	bool nonSpaceCharsPrinted = false;
 	for(u8 j = 0; j < DONUT_HEIGHT; j++) {
 		for(u8 i = 0; i < DONUT_WIDTH; i++) {
 			u16 lutIndex = 0;
@@ -334,6 +354,7 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 				} else {
 					*ptr++ = shape_lut_bin[lutIndex];
 				}
+				nonSpaceCharsPrinted = true;
 			} else {
 				*ptr++ = ' ';
 			}
@@ -341,4 +362,24 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	}
 	*ptr++ = '\0';
 	print(frameBuffer);
+	if (!nonSpaceCharsPrinted)
+		print("\x1b[104;37m"
+		"\x1b[3;22H"  "                                    "
+		"\x1b[4;22H"  "        FLAGRANT DONUT ERROR        "
+		"\x1b[5;22H"  "                                    "
+		"\x1b[6;22H"  "          Donut Shop Over.          "
+		"\x1b[7;22H"  "        Buffer = Very Blank.        "
+		"\x1b[8;22H"  "                                    "
+		"\x1b[9;22H"  " If you're seeing this, the donut   "
+		"\x1b[10;22H" " failed to render. Please disable   "
+		"\x1b[11;22H" " \"Store EFB Copies to Texture Only\" "
+		"\x1b[12;22H" " (Settings -> Graphics -> Hacks)    "
+		"\x1b[13;22H" " if you're running this on Dolphin. "
+		"\x1b[14;22H" " If this is not the case, or if     "
+		"\x1b[15;22H" " disabling the setting didn't work, "
+		"\x1b[16;22H" " something has gone horribly wrong. "
+		"\x1b[17;22H" " Please contact me via e-mail or on "
+		"\x1b[18;22H" " the GitHub repository, which is at "
+		"\x1b[19;22H" " korbosoft/korbo-donut.             "
+		"\x1b[20;22H" "                                    ");
 }

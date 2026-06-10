@@ -1,14 +1,10 @@
 .PHONY: clean gba gamecube wii
 
-VERSION	:=	v5.4.0
+VERSION	:=	v5.5.1
 
 CURDIR = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
-all: gba .WAIT gamecube .WAIT wii
-
-gba:
-	@echo Building GBA Donut
-	@$(MAKE) --no-print-directory -C $(CURDIR)/gba
+all: gamecube .WAIT wii
 
 gamecube:
 	@echo
@@ -22,7 +18,7 @@ wii:
 
 clean:
 	@rm -rf build-* *.elf *.dol
-	@rm -rf build-* *.elf *.dol data/demo_mb.gba
+	@rm -rf build-* *.elf *.dol
 	@echo i\'m awesome clean now :\)
 
 release:

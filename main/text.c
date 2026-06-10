@@ -18,7 +18,7 @@ static void generate_padding(const char *input, const size_t resultingLength, ch
 	output[paddingNeeded] = '\0';
 }
 
-int format_info(const char *prefix, const char *input, char output[79], bool pad) {
+int format_info(const char *prefix, const char *input, char output[83], bool pad) {
 	char padding[83];
 	if (pad) {
 		generate_padding(input, 77 - strlen(prefix), padding);
@@ -26,7 +26,7 @@ int format_info(const char *prefix, const char *input, char output[79], bool pad
 		padding[0] = '\0';
 	}
 
-	snprintf(output, 78, "%s\e[4m%s%s", padding, prefix, input);
+	snprintf(output, 83, "%s\e[4m%s%s", padding, prefix, input);
 	return strlen(output);
 }
 
