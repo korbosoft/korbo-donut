@@ -28,6 +28,9 @@ INCLUDES	:=
 # options for code generation
 #---------------------------------------------------------------------------------
 
+CFLAGS		=	-g -O3 -fexec-charset=CP437 -Wall -DVERSION=\"$(VERSION)\" $(MACHDEP) $(INCLUDE)
+CXXFLAGS	=	$(CFLAGS)
+
 LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
 #---------------------------------------------------------------------------------

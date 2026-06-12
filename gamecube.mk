@@ -2,11 +2,6 @@ include $(DEVKITPPC)/gamecube_rules
 
 BUILD		:=	build-gc
 
-CFLAGS		=	-g -O3 -fexec-charset=CP437 -Wall -DGC -DVERSION=\"$(VERSION)\" $(MACHDEP) $(INCLUDE)
-CXXFLAGS	=	$(CFLAGS)
-
-LIBS		:=	-lfat -lgrrmod -laesnd -lgrrlib -lpngu `$(PREFIX)pkg-config freetype2 libpng libjpeg --libs` -lfat -laesnd -logc -lm
-
-LIBDIRS	:= $(PORTLIBS)
+LIBS		:=	-lgrrmod -lgrrlib -lpngu `$(PREFIX)pkg-config freetype2 libpng libjpeg --libs` -lfat -laesnd -logc -lm
 
 export OUTPUT	:=	$(abspath $(dir $(firstword $(MAKEFILE_LIST))))/donut-gc

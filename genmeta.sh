@@ -1,8 +1,9 @@
+cat << EOF
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
 	<name>Korbo's Donut Shop</name>
-	<version>5.5.2</version>
-	<release_date>20260612170729</release_date>
+	<version>$1</version>
+	<release_date>$(date -u +%Y%m%d%H%M%S)</release_date>
 	<!-- date format is YYYYMMDDhhmmss, UTC-->
 	<coder>Korbosoft</coder>
 	<short_description>Korbo's spinning donut!</short_description>
@@ -21,3 +22,4 @@ Korbo:       korbin.m.marshall@gmail.com
 The default background song is "Addiction" by Jogeir Liljedahl.
 	</long_description>
 </app>
+EOF

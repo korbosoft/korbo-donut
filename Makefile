@@ -1,32 +1,43 @@
 .PHONY: clean gba gamecube wii
 
-VERSION	:=	v5.5.1
+VERSION	:= 5.5.2
 
 CURDIR = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 all: gamecube .WAIT wii
 
 gamecube:
-	@echo
 	@echo Building GameCube version
-	@$(MAKE) --no-print-directory -f $(CURDIR)/common.mk GC=1 VERSION=$(VERSION)
+	@$(MAKE) --no-print-directory -f $(CURDIR)/common.mk GC=1 VERSION=v$(VERSION)
 
 wii:
 	@echo
 	@echo Building Wii version
-	@$(MAKE) --no-print-directory -f $(CURDIR)/common.mk VERSION=$(VERSION)
+	@$(MAKE) --no-print-directory -f $(CURDIR)/common.mk VERSION=v$(VERSION)
 
 clean:
-	@rm -rf build-* *.elf *.dol
+	@cd $(CURDIR)
 	@rm -rf build-* *.elf *.dol
 	@echo i\'m awesome clean now :\)
 
-release:
+release: meta.xml
+	@cd $(CURDIR)
+	@echo Cleaning, building
+	$(MAKE) clean
+	@echo
+	$(MAKE)
+	@echo
+	$(CURDIR)/genmeta.sh $(VERSION) > meta.xml
+	@echo
+	@echo Zipping release
 	@mkdir -p korbodonut
 	@cp boot.dol meta.xml icon.png ./korbodonut/
 	@cp donut-gc.elf donut-gc-debug.elf
 	@cp boot.elf donut-wii-debug.elf
 	@zip -rv donut ./korbodonut/
-	@gh release create $(VERSION) donut.zip donut-gc.dol donut-wii-debug.elf donut-gc-debug.elf
-	@rm -rf ./korbodonut/ donut-wii-debug.elf donut-gc-debug.elf donut.zip
-
+	@echo
+	@printf "# v${VERSION}" > temp.md
+	nano -L temp.md
+	@printf "\n\nThe debug ELFs have no extra features other than debug info embedded into them." >> temp.md
+	gh release create $(VERSION) donut.zip donut-gc.dol donut-wii-debug.elf donut-gc-debug.elf -F temp.md
+	@rm -rf ./korbodonut/ donut-wii-debug.elf donut-gc-debug.elf donut.zip temp.md

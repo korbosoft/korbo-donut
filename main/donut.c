@@ -5,6 +5,7 @@
 #include "colors.h"
 #include "donut.h"
 #include "grrproxy.h"
+#include "strings.h"
 #include "text.h"
 
 #include "shape_lut_bin.h"
@@ -27,59 +28,124 @@ static GRRLIB_texImg *munchTex;
 static u16 munch_timer;
 static u16 rainbow_timer;
 
-void draw_mapped_torus(f32 minor, f32 major, int nsides, int rings, bool filled, u32 col) {
-	const f32 ringDelta = 2.0 * M_PI / rings;
-	const f32 sideDelta = 2.0 * M_PI / nsides;
+typedef struct {
+	f32 pos0[3];
+	f32 nrm0[3];
+	f32 tex0[2];
+	f32 pos1[3];
+	f32 nrm1[3];
+	f32 tex1[2];
+} DonutModel;
+
+static DonutOptions donutOptions;
+static DonutOptions frostingOptions;
+
+static DonutModel donutModel[DONUT_RINGS][DONUT_SIDES + 1];
+static DonutModel frostingModel[DONUT_RINGS][DONUT_SIDES + 1];
+
+static void draw_donut(DonutOptions options, bool filled) {
+	const f32 ringDelta = 2.0 * M_PI / DONUT_RINGS;
+	const f32 sideDelta = 2.0 * M_PI / DONUT_SIDES;
 
 	f32 theta = 0.0f;
 	f32 cosTheta = 1.0f;
 	f32 sinTheta = 0.0f;
-	for (int i = 0; i < rings; i++) {
-		const f32 theta1 = theta + ringDelta;
-		const f32 cosTheta1 = cosf(theta1);
-		const f32 sinTheta1 = sinf(theta1);
 
-		const f32 u0 = (f32)i / rings;
-		const f32 u1 = (f32)(i + 1) / rings;
+	if ((donutOptions.major != options.major) &&
+		(donutOptions.minor != options.minor) &&
+		(donutOptions.col != options.col)) {
+		donutOptions.major = options.col;
+		donutOptions.minor = options.col;
+		donutOptions.col = options.col;
+		for (int i = 0; i < DONUT_RINGS; i++) {
+			const f32 theta1 = theta + ringDelta;
+			const f32 cosTheta1 = cosf(theta1);
+			const f32 sinTheta1 = sinf(theta1);
 
-		GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(nsides + 1));
-		f32 phi = M_PI;
-		for (int j = 0; j <= nsides; j++) {
-			const f32 cosPhi = cosf(phi), sinPhi = sinf(phi);
-			const f32 dist = major + minor*cosPhi;
+			const f32 u0 = (f32)i / DONUT_RINGS;
+			const f32 u1 = (f32)(i + 1) / DONUT_RINGS;
+			GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(DONUT_SIDES + 1));
+			f32 phi = M_PI;
+			for (int j = 0; j <= DONUT_SIDES; j++) {
+				const f32 cosPhi = cosf(phi), sinPhi = sinf(phi);
+				const f32 dist = options.major + options.minor*cosPhi;
 
-			const f32 v = (f32)j / nsides;
+				const f32 v = (f32)j / DONUT_SIDES;
+				const f32 z = options.minor*sinPhi;
 
-			GX_Position3f32(cosTheta1*dist, -sinTheta1*dist, minor*sinPhi);
-			GX_Normal3f32(cosTheta1*cosPhi, -sinTheta1*cosPhi, sinPhi);
-			GX_Color1u32(col);
-			GX_TexCoord2f32(u1, v);
+				GX_Position3f32(cosTheta1*dist, -sinTheta1*dist, z);
+				donutModel[i][j].pos1[0] = cosTheta1*dist;
+				donutModel[i][j].pos1[1] = -sinTheta1*dist;
+				donutModel[i][j].pos1[2] = z;
+				GX_Normal3f32(cosTheta1*cosPhi, -sinTheta1*cosPhi, sinPhi);
+				donutModel[i][j].nrm1[0] = cosTheta1*cosPhi;
+				donutModel[i][j].nrm1[1] = -sinTheta1*cosPhi;
+				donutModel[i][j].nrm1[2] = sinPhi;
+				GX_Color1u32(options.col);
+				donutOptions.col = options.col;
+				GX_TexCoord2f32(u1, v);
+				donutModel[i][j].tex1[0] = u1;
+				donutModel[i][j].tex1[1] = v;
 
-			GX_Position3f32(cosTheta*dist, -sinTheta*dist, minor*sinPhi);
-			GX_Normal3f32(cosTheta*cosPhi, -sinTheta*cosPhi, sinPhi);
-			GX_Color1u32(col);
-			GX_TexCoord2f32(u0, v);
+				GX_Position3f32(cosTheta*dist, -sinTheta*dist, z);
+				donutModel[i][j].pos0[0] = cosTheta*dist;
+				donutModel[i][j].pos0[1] = -sinTheta*dist;
+				donutModel[i][j].pos0[2] = z;
+				GX_Normal3f32(cosTheta*cosPhi, -sinTheta*cosPhi, sinPhi);
+				donutModel[i][j].nrm0[0] = cosTheta*cosPhi;
+				donutModel[i][j].nrm0[1] = -sinTheta*cosPhi;
+				donutModel[i][j].nrm0[2] = sinPhi;
+				GX_Color1u32(options.col);
+				GX_TexCoord2f32(u0, v);
+				donutModel[i][j].tex0[0] = u0;
+				donutModel[i][j].tex0[1] = v;
+				phi += sideDelta;
+			}
+			GX_End();
 
-			phi += sideDelta;
+			cosTheta = cosTheta1;
+			sinTheta = sinTheta1;
+			theta = theta1;
 		}
-		GX_End();
+	} else {
+		for (int i = 0; i < DONUT_RINGS; i++) {
+			GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(DONUT_SIDES + 1));
+			for (int j = 0; j <= DONUT_SIDES; j++) {
+				GX_Position3f32(donutModel[i][j].pos1[0],
+								donutModel[i][j].pos1[1],
+								donutModel[i][j].pos1[2]);
+				GX_Normal3f32(donutModel[i][j].nrm1[0],
+							  donutModel[i][j].nrm1[1],
+							  donutModel[i][j].nrm1[2]);
+				GX_Color1u32(donutOptions.col);
+				GX_TexCoord2f32(donutModel[i][j].tex1[0],
+								donutModel[i][j].tex1[1]);
 
-		cosTheta = cosTheta1;
-		sinTheta = sinTheta1;
-		theta = theta1;
+				GX_Position3f32(donutModel[i][j].pos0[0],
+								donutModel[i][j].pos0[1],
+								donutModel[i][j].pos0[2]);
+				GX_Normal3f32(donutModel[i][j].nrm0[0],
+							  donutModel[i][j].nrm0[1],
+							  donutModel[i][j].nrm0[2]);
+				GX_Color1u32(donutOptions.col);
+				GX_TexCoord2f32(donutModel[i][j].tex0[0],
+								donutModel[i][j].tex0[1]);
+			}
+			GX_End();
+		}
 	}
 }
 
-static void draw_frosting(f32 minor, f32 major, int nsides, int rings, bool filled, u32 col) {
-	const f32 ringDelta = 2.0f*M_PI/rings;
-	const f32 sideDelta = M_PI/nsides;
+static void draw_frosting(DonutOptions options, bool filled) {
+	const f32 ringDelta = 2.0f*M_PI/DONUT_RINGS;
+	const f32 sideDelta = M_PI/DONUT_SIDES;
 	const f32 waveAmp = 0.5f;
 	const f32 waveFreq = 10.0f;
 
 	f32 theta = 0.0f;
 	f32 cosTheta = 1.0f;
 	f32 sinTheta = 0.0f;
-	for (int i = 0; i < rings; i++) {
+	for (int i = 0; i < DONUT_RINGS; i++) {
 		const f32 theta1 = theta + ringDelta;
 		const f32 cosTheta1 = cos(theta1);
 		const f32 sinTheta1 = sin(theta1);
@@ -87,25 +153,25 @@ static void draw_frosting(f32 minor, f32 major, int nsides, int rings, bool fill
 		const f32 cutZ0 = waveAmp/2*(waveAmp*2 + sinf(theta*waveFreq));
 		const f32 cutZ1 = waveAmp/2*(waveAmp*2 + sinf(theta1*waveFreq));
 
-		const f32 u0 = (f32)i / rings;
-		const f32 u1 = (f32)(i + 1) / rings;
+		const f32 u0 = (f32)i / DONUT_RINGS;
+		const f32 u1 = (f32)(i + 1) / DONUT_RINGS;
 
-		GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(nsides + 1));
+		GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(DONUT_SIDES + 1));
 
 		f32 phi = 0.0f;
-		for (int j = 0; j <= nsides; j++) {
+		for (int j = 0; j <= DONUT_SIDES; j++) {
 			const f32 cosPhi = cosf(phi), sinPhi = sinf(phi);
-			const f32 dist = major + minor*cosPhi;
+			const f32 dist = options.major + options.minor*cosPhi;
 
-			const f32 v = (f32)j / nsides;
+			const f32 v = (f32)j / DONUT_SIDES;
 
-			f32 z = minor*sinPhi;
+			f32 z = options.minor*sinPhi;
 			f32 z1 = z;
 			if (z1 < cutZ1) z1 = cutZ1;
 
 			GX_Position3f32(cosTheta1*dist, -sinTheta1*dist, z1);
 			GX_Normal3f32(cosTheta1*cosPhi, -sinTheta1*cosPhi, sinPhi);
-			GX_Color1u32(col);
+			GX_Color1u32(options.col);
 			GX_TexCoord2f32(u1, v);
 
 			f32 z0 = z;
@@ -113,7 +179,7 @@ static void draw_frosting(f32 minor, f32 major, int nsides, int rings, bool fill
 
 			GX_Position3f32(cosTheta*dist, -sinTheta*dist, z0);
 			GX_Normal3f32(cosTheta*cosPhi, -sinTheta*cosPhi, sinPhi);
-			GX_Color1u32(col);
+			GX_Color1u32(options.col);
 			GX_TexCoord2f32(u0, v);
 
 			phi += sideDelta;
@@ -172,7 +238,7 @@ static void genMunchTex(GRRLIB_texImg *tex, u16 t) {
 
 void donut_init(void) {
 	shapeBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
-	donutBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
+	donutBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH + DONUT_WIDTH % 4, DONUT_HEIGHT);
 	rainbowTex = GRRLIB_CreateEmptyTexture(12, 12);
 	greyPixel = GRRLIB_CreateEmptyTexture(1, 1);
 	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
@@ -254,12 +320,13 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	u32 top = RGBA(flavor.top.r, flavor.top.g, flavor.top.b, flavor.top.a);
 	u32 bottom = RGBA(flavor.bottom.r, flavor.bottom.g, flavor.bottom.b, flavor.bottom.a);
 
-	draw_mapped_torus(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, 0xFFFFFFFF);
-	if ((flavor.texture == NONE) && (top != bottom))
-		draw_frosting(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, 0xFFFFFFFF);
-
 	GX_SetViewport(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4);
+
+	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
+	if ((flavor.texture == NONE) && (top != bottom))
+		draw_frosting((DonutOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
+
 	GRRLIB_Screen2Texture(0, 0, shapeBuffer, true);
 
 	if (renderingType)
@@ -291,15 +358,18 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 			set_tex(greyPixel, false);
 	}
 
-	draw_mapped_torus(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, bottom);
+	GX_SetViewport(0,0, DONUT_WIDTH, DONUT_HEIGHT, 0, 1);
+	GX_SetScissor(0,0, DONUT_WIDTH, DONUT_HEIGHT);
+
+	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, bottom}, true);
 	if ((flavor.texture == NONE) & (top != bottom))
-		draw_frosting(DONUT_MINOR, DONUT_MAJOR, DONUT_SIDES, DONUT_RINGS, true, top);
+		draw_frosting((DonutOptions){DONUT_MINOR, DONUT_MAJOR, top}, true);
 
 	GRRLIB_Screen2Texture(0, 0, donutBuffer, true);
 
 	char frameBuffer[DONUT_WIDTH*DONUT_HEIGHT*20 + 1];
 	char *ptr = frameBuffer;
-	u8 last_r = -1, last_g = -1, last_b = -1;
+	s16 last_r = -1, last_g = -1, last_b = -1;
 	const char ramp[] = " -:=+<)%}Ics7fnCo3wmSd6VAXUK8R@Q"; // generated with tools/gen.py
 
 	print("\x1b[H");
@@ -307,17 +377,17 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	for(u8 j = 0; j < DONUT_HEIGHT; j++) {
 		for(u8 i = 0; i < DONUT_WIDTH; i++) {
 			u16 lutIndex = 0;
-			u16 r_avg = 0, g_avg = 0, b_avg = 0, l_avg = 0;
+			u16 l_avg = 0;
+			u32 col = GRRLIB_GetPixelFromtexImg(i, j, donutBuffer);
+			u8 r = R(col), g = G(col), b = B(col);
 
 			for(u8 py = 0; py < 4; py++) {
 				for(u8 px = 0; px < 2; px++) {
 					u8 img_x = (i*2) + px;
 					u8 img_y = (j*4) + py;
 
-					u32 col = GRRLIB_GetPixelFromtexImg(img_x, img_y, donutBuffer);
 					u32 shape = GRRLIB_GetPixelFromtexImg(img_x, img_y, shapeBuffer);
 
-					u8 cr = R(col), cg = G(col), cb = B(col);
 					u8 l = G(shape);
 					// no luminance check needed because shape buffer should always be greyscale
 					u8 val = (l >> 6) & 0x03;
@@ -325,29 +395,22 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 					lutIndex |= (val << shift);
 
 					l_avg += l;
-					r_avg += cr; g_avg += cg; b_avg += cb;
 				}
 			}
 			// average
-			r_avg >>= 3;
-			g_avg >>= 3;
-			b_avg >>= 3;
 			l_avg >>= 6;
-			// if (r_avg == 256) r_avg = 255;
-			// if (g_avg == 256) g_avg = 255;
-			// if (b_avg == 256) b_avg = 255;
-			if (r_avg + g_avg + b_avg) {
-				if ((last_r != r_avg) || (last_g != g_avg) || (last_b != b_avg)) {
+			if (r + g + b) {
+				if ((last_r != r) || (last_g != g) || (last_b != b)) {
 					ptr = stpcpy(ptr, "\x1b[38;2;");
-					ptr = u82Str(ptr, r_avg);
+					ptr = u82Str(ptr, r);
 					*ptr++ = ';';
-					ptr = u82Str(ptr, g_avg);
+					ptr = u82Str(ptr, g);
 					*ptr++ = ';';
-					ptr = u82Str(ptr, b_avg);
+					ptr = u82Str(ptr, b);
 					*ptr++ = 'm';
-					last_r = r_avg;
-					last_g = g_avg;
-					last_b = b_avg;
+					last_r = r;
+					last_g = g;
+					last_b = b;
 				}
 				if (renderingType) {
 					*ptr++ = ramp[l_avg];
@@ -363,23 +426,5 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	*ptr++ = '\0';
 	print(frameBuffer);
 	if (!nonSpaceCharsPrinted)
-		print("\x1b[104;37m"
-		"\x1b[3;22H"  "                                    "
-		"\x1b[4;22H"  "        FLAGRANT DONUT ERROR        "
-		"\x1b[5;22H"  "                                    "
-		"\x1b[6;22H"  "          Donut Shop Over.          "
-		"\x1b[7;22H"  "        Buffer = Very Blank.        "
-		"\x1b[8;22H"  "                                    "
-		"\x1b[9;22H"  " If you're seeing this, the donut   "
-		"\x1b[10;22H" " failed to render. Please disable   "
-		"\x1b[11;22H" " \"Store EFB Copies to Texture Only\" "
-		"\x1b[12;22H" " (Settings -> Graphics -> Hacks)    "
-		"\x1b[13;22H" " if you're running this on Dolphin. "
-		"\x1b[14;22H" " If this is not the case, or if     "
-		"\x1b[15;22H" " disabling the setting didn't work, "
-		"\x1b[16;22H" " something has gone horribly wrong. "
-		"\x1b[17;22H" " Please contact me via e-mail or on "
-		"\x1b[18;22H" " the GitHub repository, which is at "
-		"\x1b[19;22H" " korbosoft/korbo-donut.             "
-		"\x1b[20;22H" "                                    ");
+		print("\x1b[104;37m" STRING_DONUT_ERROR);
 }

@@ -16,6 +16,12 @@
 #define DONUT_AMBIENT LC_DARKER
 #define DONUT_LIGHT LC_WHITE
 
+typedef struct {
+	f32 minor;
+	f32 major;
+	u32 col;
+} DonutOptions;
+
 extern void donut_init(void);
 extern void donut_free(void);
 extern void render_frame(float A, float B, Donut flavor, bool renderingType);

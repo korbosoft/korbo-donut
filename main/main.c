@@ -29,6 +29,24 @@ static bool paused = true;
 static bool renderingType = false;
 static u8 frostingFlavor = 0;
 
+#ifndef HW_RVL
+static void GetPreferredMode(GXRModeObj *mode) {
+	switch (VIDEO_GetCurrentTvMode()) {
+		case VI_NTSC:
+			mode = &TVNtsc480IntDf;
+			break;
+		case VI_PAL:
+			mode = &TVPal576IntDfScale;
+			break;
+		case VI_MPAL:
+			mode = &TVMpal480IntDf;
+			break;
+		case VI_EURGB60:
+			mode = &TVEurgb60Hz480IntDf;
+	}
+}
+#endif
+
 int main(int argc, char **argv) {
 	char splash[44], title[83], frostingName[83], doughName[83];
 	bool showControls = false;
@@ -44,6 +62,10 @@ int main(int argc, char **argv) {
 
 	// Initialize the file... thing. I can't really call it the "file system", can I?
 	file_init();
+
+#ifndef HW_RVL
+	GetPreferredMode(rmode);
+#endif
 
 	// Allocate memory for the display in the uncached region
 	cxfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
@@ -78,6 +100,19 @@ int main(int argc, char **argv) {
 
 	float A = 1, B = 1;
 
+	#define SPLASH_COUNT 8
+
+	const char *splashMessages[SPLASH_COUNT] = {
+		[0] = "Also try DS Donut!",
+		[1] = "Also try 3DS Donut!",
+		[2] = "Also try Lily Skate!",
+		[3] = "Better than Wii Donut!",
+		[4] = "oh man please to help i am not good with co",
+		[5] = "(\"Doughnut\" if you're british)",
+		[6] = "Korbo loves you <3",
+		[7] = "Did you know you can change the music?",
+	};
+
 	if (rand() % 49) {
 		format_splash(splashMessages[rand() % SPLASH_COUNT] ?: "FLAGRANT SPLASH ERROR", splash);
 	} else {
@@ -85,7 +120,7 @@ int main(int argc, char **argv) {
 	}
 
 	GX_SetCullMode(GX_CULL_FRONT);
-	VIDEO_ClearFrameBuffer(rmode, cxfb, 0x00800080);
+	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
 	u8 showFrosting = 0;
 	while(SYS_MainLoop()) {
