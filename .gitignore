@@ -3,8 +3,10 @@ build*
 tools/shape_lut.bin
 tools/font.png
 tools/font.h
+korbodonut/
 
 meta.xml
+temp.md
 
 *.elf
 *.dol
