@@ -22,7 +22,7 @@ clean:
 
 release: meta.xml
 	@git diff-files --quiet --ignore-submodules || { echo "ERROR: Unstaged files"; exit 1; }
-	@git fetch && [ -n "$(git log @{u}..HEAD --oneline)" ] || { echo "Unpushed commits detected"; exit 1; }
+	@git fetch && if git status -sb | grep -q "ahead"; then echo "ERROR: Unpushed commits"; exit 1; else echo "Everything checks out :)"; fi
 	@cd $(CURDIR)
 	@echo Cleaning, building
 	$(MAKE) clean
@@ -41,5 +41,5 @@ release: meta.xml
 	@printf "# v${VERSION}" > temp.md
 	nano -L temp.md
 	@printf "\n\nThe debug ELFs have no extra features other than debug info embedded into them." >> temp.md
-	gh release create $(VERSION) donut.zip donut-gc.dol donut-wii-debug.elf donut-gc-debug.elf -F temp.md;
+# 	gh release create $(VERSION) -t $(VERSION) donut.zip donut-gc.dol donut-wii-debug.elf donut-gc-debug.elf -F temp.md
 	@rm -rf ./korbodonut/ donut-wii-debug.elf donut-gc-debug.elf donut.zip temp.md

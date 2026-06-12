@@ -2,7 +2,7 @@
 <app version="1">
 	<name>Korbo's Donut Shop</name>
 	<version>5.5.2</version>
-	<release_date>20260612171450</release_date>
+	<release_date>20260612172233</release_date>
 	<!-- date format is YYYYMMDDhhmmss, UTC-->
 	<coder>Korbosoft</coder>
 	<short_description>Korbo's spinning donut!</short_description>
