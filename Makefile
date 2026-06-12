@@ -20,7 +20,7 @@ clean:
 	@rm -rf build-* *.elf *.dol
 	@echo i\'m awesome clean now :\)
 
-release: meta.xml
+release:
 	@git diff-files --quiet --ignore-submodules || { echo "ERROR: Unstaged files"; exit 1; }
 	@git fetch && if git status -sb | grep -q "ahead"; then echo "ERROR: Unpushed commits"; exit 1; else echo "everything checks out :)"; fi
 	@cd $(CURDIR)
