@@ -40,5 +40,5 @@ release:
 	@echo
 	nano -L temp.md
 	@printf "\n\nThe debug ELFs have no extra features other than debug info embedded into them." >> temp.md
-	gh release create $(VERSION) -t v$(VERSION) donut.zip donut-gc.dol donut-wii-debug.elf donut-gc-debug.elf -F temp.md
+	gh release create v$(VERSION) -t v$(VERSION) donut.zip donut-gc.dol donut-wii-debug.elf donut-gc-debug.elf -F temp.md
 	@rm -rf ./korbodonut/ donut-wii-debug.elf donut-gc-debug.elf donut.zip temp.md
