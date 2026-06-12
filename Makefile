@@ -22,7 +22,7 @@ clean:
 
 release: meta.xml
 	@git diff-files --quiet --ignore-submodules || { echo "ERROR: Unstaged files"; exit 1; }
-	@git fetch && if git status -sb | grep -q "ahead"; then echo "ERROR: Unpushed commits"; exit 1; else echo "Everything checks out :)"; fi
+	@git fetch && if git status -sb | grep -q "ahead"; then echo "ERROR: Unpushed commits"; exit 1; else echo "everything checks out :)"; fi
 	@cd $(CURDIR)
 	@echo Cleaning, building
 	$(MAKE) clean
