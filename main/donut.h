@@ -5,7 +5,7 @@
 #include "colors.h"
 
 #define DONUT_WIDTH 78
-#define DONUT_HEIGHT 22
+#define DONUT_HEIGHT 20
 #define DONUT_FOV 45
 
 #define DONUT_MINOR 1.0f

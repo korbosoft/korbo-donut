@@ -78,20 +78,18 @@ int main(int argc, char **argv) {
 	VIDEO_SetNextFramebuffer(cxfb);
 
 	// setup our projection matrix
-	float aspect = 4.0 / 3.0f;
 	// float aspect = VIDEO_GetAspectRatio();
-	// if (CONF_GetAspectRatio() == CONF_ASPECT_16_9) {
-	// 	aspect = 16.0f/9.0f;
-	// } else {
-	// 	aspect = 4.0f/3.0f;
-	// }
-
+#ifndef HW_RVL
+	const float aspect = 4.0 / 3.0f;
+#else
+	const float aspect = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? \
+				   16.0f/9.0f : 4.0f/3.0f;
+#endif
 	float donAspect = aspect;
 
-	donAspect *= 78.0f / 44.0f; // effectively halves the width to match the character aspect
+	donAspect *= (float)DONUT_WIDTH / (float)(DONUT_HEIGHT*2); // times 2 because text characters are 8x16
 
-	int titleLength = music_init(title);
-	int frostingLength;
+	music_init(title);
 
 	PROXY_3dMode(0.1F, 300.0F, 45, true, true, donAspect);
 	PROXY_Camera3dSettings(0.0f,0.0f,0.0f, 0,1,0, 0,0,0);
@@ -100,7 +98,7 @@ int main(int argc, char **argv) {
 
 	float A = 1, B = 1;
 
-	#define SPLASH_COUNT 8
+	#define SPLASH_COUNT 12
 
 	const char *splashMessages[SPLASH_COUNT] = {
 		[0] = "Also try DS Donut!",
@@ -111,12 +109,16 @@ int main(int argc, char **argv) {
 		[5] = "(\"Doughnut\" if you're british)",
 		[6] = "Korbo loves you <3",
 		[7] = "Did you know you can change the music?",
+		[8] = "GBA Donut: Gone but not forgotten </3",
+		[9] = "You best not forget the spongebob incident.",
+		[10] = "so there's this series called HLVRAI and it",
+		[11] = "You love Shit River.",
 	};
 
-	if (rand() % 49) {
-		format_splash(splashMessages[rand() % SPLASH_COUNT] ?: "FLAGRANT SPLASH ERROR", splash);
+	if (rand() % 50) {
+		format_splash(splashMessages[rand() % SPLASH_COUNT] ?: "I made a boo boo, yeah~.", splash);
 	} else {
-		format_splash("This splash has a 1/50 chance of appearing", splash);
+		format_splash("This splash has a 1/50 chance of appearing!", splash);
 	}
 
 	GX_SetCullMode(GX_CULL_FRONT);
@@ -151,8 +153,9 @@ int main(int argc, char **argv) {
 		if (showFrosting)
 			showFrosting--;
 
-		frostingLength = format_info("Flavor: ", frosting[frostingFlavor].name, frostingName, false);
-		printf("\x1b[0;%iH" "%s" "\x1b[0;0m", 83 - (showFrosting ? frostingLength : titleLength), showFrosting ? frostingName : title);
+		print("\x1b[H");
+		print(showFrosting ? frostingName : title);
+		print("\x1b[0;0;0m");
 
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
@@ -167,6 +170,7 @@ int main(int argc, char **argv) {
 		} else if ((wiiPressed & WPAD_BUTTON_PLUS) | (GCPressed & PAD_BUTTON_Y)) {
 			frostingFlavor++;
 			frostingFlavor %= FROSTING_FLAVORS;
+			format_info("Flavor: ", frosting[frostingFlavor].name, frostingName, true);
 			showFrosting = 100;
 		} else if ((wiiPressed & WPAD_BUTTON_A) | (GCPressed & PAD_BUTTON_A)) {
 			music_pause(paused);

@@ -60,7 +60,13 @@ CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
+
+export PNGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.png)))
+export OTHER_BIN	:=	$(foreach dir,$(DATA),$(notdir $(filter-out %.png,$(wildcard $(dir)/*.*))))
+
+export TPLFILES	:=	$(shell echo "$(PNGFILES)" | sed -E 's/-[^. ]+\.png/.tpl/g')
+
+export BINFILES	:=	$(TPLFILES) $(OTHER_BIN)
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -128,8 +134,27 @@ $(OFILES_SOURCES) : $(HFILES)
 
 -include $(DEPENDS)
 
-#---------------------------------------------------------------------------------
-%.png.o	%_png.h :	%.png
+$(TPLFILES): %.tpl:
+	@SRC_FILE=$$(ls ../$(DATA)/$*-*.png 2>/dev/null); \
+	if [ -z "$$SRC_FILE" ]; then echo "Error: Could not find source PNG for $@"; exit 1; fi; \
+	FORMAT=$$(echo "$$SRC_FILE" | sed -E 's/.*-([^.]+)\.png/\1/' | tr '[:lower:]' '[:upper:]'); \
+	cp "$$SRC_FILE" "$*-working.png"; \
+	oxipng "$*-working.png" -aqomax --strip all --scale16 2>/dev/null || true; \
+	pngquant --speed 1 --strip "$*-working.png" -fq --ext .png-tmp 2>/dev/null && \
+	oxipng "$*-working.png-tmp" -aqomax --strip all --scale16 2>/dev/null || true; \
+	if [ -f "$*-working.png-tmp" ]; then \
+		SIZE1=$$(wc -c < "$*-working.png-tmp"); \
+		SIZE2=$$(wc -c < "$*-working.png"); \
+		if [ $$SIZE1 -lt $$SIZE2 ]; then \
+			mv -f "$*-working.png-tmp" "$*-working.png"; \
+		else \
+			rm -f "$*-working.png-tmp"; \
+		fi \
+	fi; \
+	wimgt encode "$*-working.png" -oD "$@" -x $$FORMAT; \
+	rm -f "$*-working.png" "$*-working.png-tmp"
+
+%.tpl.o	%_tpl.h :	%.tpl
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)

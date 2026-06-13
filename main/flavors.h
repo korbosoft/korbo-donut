@@ -11,8 +11,6 @@ enum DonutSpecial {
 enum DonutTexture {
 	NONE,
 	RAINBOW,
-	RAINBOW_PASTEL,
-	TINTED_METAL,
 	METAL,
 	SPONGE,
 	MUNCH
@@ -137,7 +135,7 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 		{0, 255, 0, 255},
 		{0, 255, 0, 255},
 		NORMAL,
-		TINTED_METAL
+		METAL
 	},
 	{
 		"Rainbow",
@@ -151,7 +149,7 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
 		NORMAL,
-		RAINBOW_PASTEL
+		RAINBOW
 	},
 	{
 		"Chrome",
@@ -162,29 +160,29 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 	},
 	{
 		"Gold",
-		{255, 255, 0, 255},
-		{255, 255, 0, 255},
+		{255, 224, 0, 255},
+		{255, 224, 0, 255},
 		NORMAL,
-		TINTED_METAL
+		METAL
 	},
 	{
 		"Aluminum",
-		{255, 255, 255, 255},
-		{255, 255, 255, 255},
+		{128, 128, 144, 255},
+		{128, 128, 144, 255},
 		NORMAL,
-		TINTED_METAL
+		METAL
 	},
 	{
 		"Sponge",
-		{255, 255, 255, 255},
-		{255, 255, 255, 255},
+		{128, 128, 128, 255},
+		{128, 128, 128, 255},
 		NORMAL,
 		SPONGE
 	},
 	{
 		"Holographic",
-		{255, 255, 255, 255},
-		{255, 255, 255, 255},
+		{128, 128, 128, 255},
+		{128, 128, 128, 255},
 		NORMAL,
 		MUNCH
 	}

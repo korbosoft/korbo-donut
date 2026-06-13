@@ -23,7 +23,7 @@
 
 #define STRING_MAIN_BOX \
 "╔════════════════════════════════════════════════════════════════════════════╗" \
-"║ \x1b[4mKorbo's Donut Shop :3 %s   %s\x1b[0m\x1b[104;37m "                 "║" \
+"║ \x1b[4mKorbo's Donut Shop %s :3\x1b[0;104;37m   \x1b[93m%s\x1b[97m "      "║" \
 "║ Originally based off \"Wii Donut\" by emilydaemon                            ║" \
 "║ Written, and otherwise created by Korbo Q. Lamp                            ║" \
 "║ Default Music is \"Addiction\" by Jogeir Liljedahl   " STRING_CONTROLS   " ║" \
