@@ -60,13 +60,7 @@ CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-
-export PNGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.png)))
-export OTHER_BIN	:=	$(foreach dir,$(DATA),$(notdir $(filter-out %.png,$(wildcard $(dir)/*.*))))
-
-export TPLFILES	:=	$(shell echo "$(PNGFILES)" | sed -E 's/-[^. ]+\.png/.tpl/g')
-
-export BINFILES	:=	$(TPLFILES) $(OTHER_BIN)
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -134,29 +128,46 @@ $(OFILES_SOURCES) : $(HFILES)
 
 -include $(DEPENDS)
 
-$(TPLFILES): %.tpl:
-	@SRC_FILE=$$(ls ../$(DATA)/$*-*.png 2>/dev/null); \
-	if [ -z "$$SRC_FILE" ]; then echo "Error: Could not find source PNG for $@"; exit 1; fi; \
-	FORMAT=$$(echo "$$SRC_FILE" | sed -E 's/.*-([^.]+)\.png/\1/' | tr '[:lower:]' '[:upper:]'); \
-	cp "$$SRC_FILE" "$*-working.png"; \
-	oxipng "$*-working.png" -aqomax --strip all --scale16 2>/dev/null || true; \
-	pngquant --speed 1 --strip "$*-working.png" -fq --ext .png-tmp 2>/dev/null && \
-	oxipng "$*-working.png-tmp" -aqomax --strip all --scale16 2>/dev/null || true; \
-	if [ -f "$*-working.png-tmp" ]; then \
-		SIZE1=$$(wc -c < "$*-working.png-tmp"); \
-		SIZE2=$$(wc -c < "$*-working.png"); \
-		if [ $$SIZE1 -lt $$SIZE2 ]; then \
-			mv -f "$*-working.png-tmp" "$*-working.png"; \
+define png-optimize
+	@errcount=0; \
+	rm -f *.png-tmp; \
+	echo "file: '$(1)'"; \
+	echo ""; \
+	echo "step 1: oxipng"; \
+	oxipng "$(1)" -aqomax --strip all --scale16 || errcount=$$(($$errcount + 1)); \
+	if [ "$$errcount" -eq "0" ]; then \
+		size1=$$(wc -c <"$(1)-tmp"); \
+		size2=$$(wc -c <"$(1)"); \
+		diff=$$(($$size1 - $$size2)); \
+		awk "BEGIN {printf \"\n%+.2f%% ($$diff bytes) difference\n\n\", ($$diff / $$size2) * 100}"; \
+		if [ $$size1 -ge $$size2 ]; then \
+			echo "$(1)-tmp >= original file size, discarding..."; \
+			rm -f "$(1)-tmp"; \
 		else \
-			rm -f "$*-working.png-tmp"; \
-		fi \
+			echo "$(1)-tmp is smaller!! replacing original :D"; \
+			mv -f "$(1)-tmp" "$(1)"; \
+		fi; \
+		echo ""; \
 	fi; \
-	wimgt encode "$*-working.png" -oD "$@" -x $$FORMAT; \
-	rm -f "$*-working.png" "$*-working.png-tmp"
+	if [ "$$errcount" -ne "0" ]; then \
+		echo "optimization failed for $(1)"; \
+	else \
+		echo "success :)"; \
+	fi
+endef
 
-%.tpl.o	%_tpl.h :	%.tpl
+PNG_OFILES := $(filter %.png.o,$(OFILES_BIN))
+define png-sequence-rule
+$(word $(1),$(PNG_OFILES)): | $(word $(shell expr $(1) - 1),$(PNG_OFILES))
+endef
+$(foreach i,$(shell seq 2 $(words $(PNG_OFILES))),$(eval $(call png-sequence-rule,$(i))))
+
+#---------------------------------------------------------------------------------
+%.png.o	%_png.h :	%.png
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
+# 	@$(call png-optimize,$<)
+	@$(shell oxipng $< -aqomax --strip all --scale16)
 	@$(bin2o)
 
 -include $(DEPSDIR)/*.d

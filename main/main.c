@@ -50,7 +50,7 @@ static void GetPreferredMode(GXRModeObj *mode) {
 int main(int argc, char **argv) {
 	char splash[44], title[83], frostingName[83], doughName[83];
 	bool showControls = false;
-	guVector lpos = {2.0f, 2.0f, 2.0f};
+	guVector lpos = {0.0f, 2.0f, 0.0f};
 	GXLightObj lobj;
 
 	srand(time(NULL));
@@ -79,12 +79,12 @@ int main(int argc, char **argv) {
 
 	// setup our projection matrix
 	// float aspect = VIDEO_GetAspectRatio();
-#ifndef HW_RVL
+// #ifndef HW_RVL
 	const float aspect = 4.0 / 3.0f;
-#else
-	const float aspect = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? \
-				   16.0f/9.0f : 4.0f/3.0f;
-#endif
+// #else
+// 	const float aspect = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? \
+// 				   16.0f/9.0f : 4.0f/3.0f;
+// #endif
 	float donAspect = aspect;
 
 	donAspect *= (float)DONUT_WIDTH / (float)(DONUT_HEIGHT*2); // times 2 because text characters are 8x16
@@ -164,8 +164,6 @@ int main(int argc, char **argv) {
 		} else if ((wiiPressed & WPAD_BUTTON_2) | (GCPressed & PAD_BUTTON_B)) {
 			showControls = !showControls;
 		} else if ((wiiPressed & WPAD_BUTTON_MINUS) | (GCPressed & PAD_BUTTON_X)) {
-			// bgColor++;
-			// bgColor %= 7;
 			renderingType = !renderingType;
 		} else if ((wiiPressed & WPAD_BUTTON_PLUS) | (GCPressed & PAD_BUTTON_Y)) {
 			frostingFlavor++;

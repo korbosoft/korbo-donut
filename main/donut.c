@@ -10,10 +10,10 @@
 
 #include "shape_lut_bin.h"
 
-#include "metal_tpl.h"
-#include "tintedMetal_tpl.h"
-#include "sponge_tpl.h"
-// #include "sprinkles_tpl.h"
+#include "metal_png.h"
+// #include "tintedMetal_png.h"
+#include "sponge_png.h"
+// #include "sprinkles_png.h"
 
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
@@ -136,8 +136,10 @@ static void draw_donut(DonutOptions options, bool filled) {
 }
 
 static void draw_frosting(DonutOptions options, bool filled) {
-	if ((frostingOptions.major != options.major) ||
-		(frostingOptions.minor != options.minor) ||
+	const f32 major = options.major - 0.1f;
+	const f32 minor = options.minor + 0.1f;
+	if ((frostingOptions.major != major) ||
+		(frostingOptions.minor != minor) ||
 		(frostingOptions.col != options.col)) {
 		const f32 ringDelta = 2.0f*M_PI/DONUT_RINGS;
 		const f32 sideDelta = M_PI/DONUT_SIDES;
@@ -148,8 +150,8 @@ static void draw_frosting(DonutOptions options, bool filled) {
 		f32 cosTheta = 1.0f;
 		f32 sinTheta = 0.0f;
 
-		frostingOptions.major = options.major;
-		frostingOptions.minor = options.minor;
+		frostingOptions.major = major;
+		frostingOptions.minor = minor;
 		frostingOptions.col = options.col;
 		for (int i = 0; i < DONUT_RINGS; i++) {
 			const f32 theta1 = theta + ringDelta;
@@ -285,17 +287,31 @@ static void genMunchTex(GRRLIB_texImg *tex, u16 t) {
 	}
 }
 
+static GRRLIB_texImg *genTintedMetalTex() {
+	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(metalTex->w, metalTex->h);
+	GRRLIB_BMFX_Grayscale(metalTex, texOut);
+	for (u16 y = 0; y < texOut->h; y++) {
+		for (u16 x = 0; x < texOut->w; x++) {
+			u8 v = G(GRRLIB_GetPixelFromtexImg(x, y, texOut));
+			const f32 min = 48.0f;
+			v = (v/255.0f)*(255.0f - min) + min;
+			GRRLIB_SetPixelTotexImg(x, y, texOut, RGBA(v, v, v, 255));
+		}
+	}
+	return texOut;
+}
+
 void donut_init(void) {
 	shapeBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
 	donutBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH + DONUT_WIDTH % 4, DONUT_HEIGHT + DONUT_HEIGHT % 4);
 	rainbowTex = GRRLIB_CreateEmptyTexture(12, 12);
 	greyPixel = GRRLIB_CreateEmptyTexture(1, 1);
 	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
-	metalTex = GRRLIB_LoadTextureTPL(metal_tpl, 0);
-	tintedMetalTex = GRRLIB_LoadTextureTPL(tintedMetal_tpl, 0);
-	spongeTex = GRRLIB_LoadTextureTPL(sponge_tpl, 0);
+	metalTex = GRRLIB_LoadTexturePNG(metal_png);
+	tintedMetalTex = genTintedMetalTex();
+	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
 	munchTex = GRRLIB_CreateEmptyTexture(128, 128);
-	// sprinklesTex = GRRLIB_LoadTextureTPL(sprinkles_tpl, 0);
+	// sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 }
 
 void donut_free(void) {
@@ -303,10 +319,9 @@ void donut_free(void) {
 	GRRLIB_FreeTexture(donutBuffer);
 	GRRLIB_FreeTexture(rainbowTex);
 	GRRLIB_FreeTexture(greyPixel);
-	// for some reason freeing TPLs makes the entire thing break??
-	// GRRLIB_FreeTexture(metalTex);
-	// GRRLIB_FreeTexture(tintedMetalTex);
-	// GRRLIB_FreeTexture(spongeTex);
+	GRRLIB_FreeTexture(metalTex);
+	GRRLIB_FreeTexture(tintedMetalTex);
+	GRRLIB_FreeTexture(spongeTex);
 	GRRLIB_FreeTexture(munchTex);
 	// GRRLIB_FreeTexture(sprinklesTex);
 }
