@@ -16,6 +16,8 @@
 #define DONUT_AMBIENT LC_DARKER
 #define DONUT_LIGHT LC_WHITE
 
+#define DONUT_ROTATION_SPEED 2.0f
+
 typedef struct {
 	f32 minor;
 	f32 major;
@@ -24,6 +26,6 @@ typedef struct {
 
 extern void donut_init(void);
 extern void donut_free(void);
-extern void render_frame(float A, float B, Donut flavor, bool renderingType);
+extern void render_frame(float A, float B, Donut flavor, bool renderingType, bool manual);
 
 #endif

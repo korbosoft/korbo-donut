@@ -1,6 +1,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#define GC_DEADZONE 18
+
 #include <ogcsys.h>
 
 extern u32 wiiPressed;

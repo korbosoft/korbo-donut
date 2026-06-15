@@ -22,6 +22,7 @@ void input_scan(void) {
 	#endif
 	PAD_ScanPads();
 }
+
 void input_down(u8 wii, u8 gamecube) {
 	#ifdef HW_RVL
 	wiiPressed = WPAD_ButtonsDown(wii);

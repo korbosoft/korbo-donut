@@ -27,6 +27,7 @@ static void *cxfb = NULL;
 
 static bool paused = true;
 static bool renderingType = false;
+static bool manual = false;
 static u8 frostingFlavor = 0;
 
 #ifndef HW_RVL
@@ -48,9 +49,9 @@ static void GetPreferredMode(GXRModeObj *mode) {
 #endif
 
 int main(int argc, char **argv) {
-	char splash[44], title[83], frostingName[83], doughName[83];
+	char splash[44], title[83], frostingName[83]/*, doughName[83]*/;
 	bool showControls = false;
-	guVector lpos = {0.0f, 2.0f, 0.0f};
+	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
 
 	srand(time(NULL));
@@ -82,7 +83,7 @@ int main(int argc, char **argv) {
 // #ifndef HW_RVL
 	const float aspect = 4.0 / 3.0f;
 // #else
-// 	const float aspect = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ? \
+// 	const float aspect = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ?
 // 				   16.0f/9.0f : 4.0f/3.0f;
 // #endif
 	float donAspect = aspect;
@@ -136,17 +137,17 @@ int main(int argc, char **argv) {
 		GX_SetChanAmbColor(GX_COLOR0A0, renderingType ? LC_DARKDARKDARK : LC_DARKER);
 		GX_SetChanCtrl(GX_COLOR0A0, GX_ENABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT0, GX_DF_CLAMP, GX_AF_NONE);
 
-		render_frame(A, B, frosting[frostingFlavor], renderingType);
-
 		input_scan();
 		input_down(0, 0);
 
+		render_frame(A, B, frosting[frostingFlavor], renderingType, manual);
+
 		if (showControls) {
-			print("\x1b[23H" "\x1b[104;37m" STRING_CONTROLS_BOX "\x1b[40m");
+			print("\x1b[23H" "\x1b[0;104;97m" STRING_CONTROLS_BOX "\x1b[40m");
 			// } else if (showFrosting) {
 
 		} else {
-			printf("\x1b[23H" "\x1b[104;37m" STRING_MAIN_BOX "\x1b[40m", VERSION, splash);
+			printf("\x1b[23H" "\x1b[0;104;97m" STRING_MAIN_BOX "\x1b[40m", splash);
 			// printf("cwd: %s\n", getcwd(NULL, 0));
 		}
 
@@ -160,11 +161,11 @@ int main(int argc, char **argv) {
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
 		if ((wiiPressed & WPAD_BUTTON_1) | (GCPressed & PAD_TRIGGER_Z)) {
-			// send_donut();
+			renderingType = !renderingType;
 		} else if ((wiiPressed & WPAD_BUTTON_2) | (GCPressed & PAD_BUTTON_B)) {
 			showControls = !showControls;
 		} else if ((wiiPressed & WPAD_BUTTON_MINUS) | (GCPressed & PAD_BUTTON_X)) {
-			renderingType = !renderingType;
+			manual = !manual;
 		} else if ((wiiPressed & WPAD_BUTTON_PLUS) | (GCPressed & PAD_BUTTON_Y)) {
 			frostingFlavor++;
 			frostingFlavor %= FROSTING_FLAVORS;

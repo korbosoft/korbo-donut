@@ -23,7 +23,7 @@
 
 #define STRING_MAIN_BOX \
 "╔════════════════════════════════════════════════════════════════════════════╗" \
-"║ \x1b[4mKorbo's Donut Shop %s :3\x1b[0;104;37m   \x1b[93m%s\x1b[97m "      "║" \
+"║ \x1b[4mKorbo's Donut Shop v"VERSION" :3\x1b[0;104;97m   \x1b[93m%s\x1b[97m ║" \
 "║ Originally based off \"Wii Donut\" by emilydaemon                            ║" \
 "║ Written, and otherwise created by Korbo Q. Lamp                            ║" \
 "║ Default Music is \"Addiction\" by Jogeir Liljedahl   " STRING_CONTROLS   " ║" \
@@ -35,9 +35,9 @@
 
 #define STRING_CONTROLS_BOX \
 "╔═══════════════════════════╦══════════════════════╦═════════════════════════╗" \
-"║ +/Y      - Change flavor  ║ -/X - Switch between ║                \e[4mControls\e[0m\e[104;37m ║" \
-"║ A        - Toggle music   ║ rendering methods    ║                         ║" \
-"║                           ║ RESET - I think you  ║                         ║" \
+"║ -/X      - Toggle manual  ║ 1/Z   - Use classic  ║                \x1b[4mControls\x1b[0;104;97m ║" \
+"║ +/Y      - Change flavor  ║ rendering method     ║ Manual mode: C-Stick    ║" \
+"║ A        - Toggle music   ║ RESET - I think you  ║ rotates on Z-axis.      ║" \
 "║ \xfd/START  - Exit           ║ can figure it out :) ║   Press 2/B to go back. ║" \
 "╚═══════════════════════════╩══════════════════════╩═════════════════════════╝"
 #else
@@ -45,9 +45,9 @@
 #define STRING_CONTROLS "  Press B for controls."
 #define STRING_CONTROLS_BOX \
 "╔═══════════════════════════╦══════════════════════╦═════════════════════════╗" \
-"║ Y        - Change Flavor  ║ X   - Switch between ║                \e[4mControls\e[0m\e[104;37m ║" \
-"║ A        - Toggle music   ║ rendering methods    ║                         ║" \
-"║                           ║ RESET - I think you  ║                         ║" \
+"║ X        - Toggle manual  ║ Z     - Use classic  ║                \x1b[4mControls\x1b[0;104;97m ║" \
+"║ Y        - Change flavor  ║ rendering method     ║ Manual mode: C-Stick    ║" \
+"║ A        - Toggle music   ║ RESET - I think you  ║ rotates on Z-axis.      ║" \
 "║ START    - Exit           ║ can figure it out :) ║     Press B to go back. ║" \
 "╚═══════════════════════════╩══════════════════════╩═════════════════════════╝"
 #endif

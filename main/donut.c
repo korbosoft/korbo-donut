@@ -1,12 +1,14 @@
 #include <gccore.h>
 #include <math.h>
 #include <grrlib.h>
+#include <stdlib.h>
 
 #include "colors.h"
 #include "donut.h"
 #include "grrproxy.h"
 #include "strings.h"
 #include "text.h"
+#include "input.h"
 
 #include "shape_lut_bin.h"
 
@@ -354,28 +356,85 @@ static void set_tex(GRRLIB_texImg *tex, bool reflective) {
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 }
 
-void render_frame(float A, float B, Donut flavor, bool renderingType) {
-	Mtx model, model2, viewreflect;
+void render_frame(float A, float B, Donut flavor, bool renderingType, bool manual) {
+	static Mtx base_orientation = {
+		{1.0f, 0.0f, 0.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 1.0f, 0.0f}
+	};
+	static float z_rad = 0.0f;
 
-	guMtxCopy(view, viewreflect);
-	viewreflect[0][3] = 0.0f;
-	viewreflect[1][3] = 0.0f;
-	viewreflect[2][3] = 0.0f;
+	Mtx model, rot_z, model2, normal;
 
-	guMtxRotRad(model, 'x', A);
-	guMtxRotRad(model2, 'z', B);
-	guMtxConcat(model2, model, model);
-	guMtxTransApply(model, model, 0.0f, 0.0f, -(3.0f/sinf(DegToRad(DONUT_FOV)/2.0f)));
-	guMtxConcat(view,model,model);
+	s8 stick_x = PAD_StickX(0);
+	s8 stick_y = PAD_StickY(0);
 
-	GX_LoadPosMtxImm(model, GX_PNMTX0);
-	GX_LoadNrmMtxImm(model, GX_PNMTX0);
+	float norm_x = 0.0f;
+	float norm_y = 0.0f;
+
+	if (abs(stick_x) > GC_DEADZONE) norm_x = (float)stick_x / 128.0f;
+	if (abs(stick_y) > GC_DEADZONE) norm_y = (float)stick_y / 128.0f;
+
+	if (manual) {
+		if (norm_x != 0.0f || norm_y != 0.0f) {
+			Mtx rot_x, rot_y, incremental_rot;
+			guMtxIdentity(rot_x);
+			guMtxIdentity(rot_y);
+
+			if (norm_y != 0.0f) guMtxRotDeg(rot_x, 'X', norm_y * DONUT_ROTATION_SPEED);
+			if (norm_x != 0.0f) guMtxRotDeg(rot_y, 'Y', norm_x * DONUT_ROTATION_SPEED);
+
+			guMtxConcat(rot_x, rot_y, incremental_rot);
+
+			guMtxConcat(base_orientation, incremental_rot, base_orientation);
+		}
+	} else {
+		Mtx auto_rot_x, auto_rot_z;
+		guMtxIdentity(auto_rot_x);
+		guMtxIdentity(auto_rot_z);
+
+		guMtxRotRad(auto_rot_x, 'X', A);
+		guMtxRotRad(auto_rot_z, 'Z', B);
+
+		guMtxConcat(auto_rot_z, auto_rot_x, model);
+
+		z_rad = 0.0f;
+	}
+
+	if (manual) {
+		guMtxCopy(base_orientation, model);
+
+		s8 c_stick_x = PAD_SubStickX(0);
+		s8 c_stick_y = PAD_SubStickY(0);
+
+		float c_magnitude = sqrtf((c_stick_x * c_stick_x) + (c_stick_y * c_stick_y));
+		if (c_magnitude > GC_DEADZONE) {
+			z_rad = atan2f((float)c_stick_y, (float)c_stick_x);
+		}
+		guMtxIdentity(rot_z);
+		guMtxRotRad(rot_z, 'Z', z_rad);
+
+		guMtxConcat(model, rot_z, model2);
+	} else {
+		guMtxCopy(model, model2);
+	}
+
+	guMtxTransApply(model2, model2, 0.0f, 0.0f, -(3.0f / sinf(DegToRad(DONUT_FOV) / 2.0f)));
+	guMtxConcat(view, model2, model2);
+
+	GX_LoadPosMtxImm(model2, GX_PNMTX0);
+
+	guMtxCopy(model2, normal);
+	normal[0][3] = 0.0f;
+	normal[1][3] = 0.0f;
+	normal[2][3] = 0.0f;
+	GX_LoadNrmMtxImm(normal, GX_PNMTX0);
 	GX_SetCurrentMtx(GX_PNMTX0);
 
-	guMtxConcat(viewreflect, model, model);
-	guMtxScaleApply(model, model, 0.5f, -0.5f, 0.0f);
-	guMtxTransApply(model, model, 0.5f, 0.5f, 1.0f);
-	GX_LoadTexMtxImm(model, GX_TEXMTX0, GX_MTX3x4);
+	guMtxCopy(normal, normal);
+	guMtxScaleApply(normal, normal, 0.5f, -0.5f, 0.0f);
+	guMtxTransApply(normal, normal, 0.5f, 0.5f, 1.0f);
+	GX_LoadTexMtxImm(normal, GX_TEXMTX0, GX_MTX3x4);
 
 	set_tex(greyPixel, false);
 
@@ -491,5 +550,5 @@ void render_frame(float A, float B, Donut flavor, bool renderingType) {
 	*ptr++ = '\0';
 	print(frameBuffer);
 	if (!nonSpaceCharsPrinted)
-		print("\x1b[104;37m" STRING_DONUT_ERROR);
+		print("\x1b[0;104;37m"STRING_DONUT_ERROR);
 }
