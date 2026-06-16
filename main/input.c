@@ -1,17 +1,15 @@
 #include "input.h"
 
-#ifdef HW_RVL
-#include <wiiuse/wpad.h>
-#else
-#include <ogc/pad.h>
-#endif
-
 u32 wiiPressed;
+#ifdef HW_RVL
+expansion_t wiiExp;
+#endif
 u16 GCPressed;
 
 void input_init(void) {
 	#ifdef HW_RVL
 	WPAD_Init();
+	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC);
 	#endif
 	PAD_Init();
 }

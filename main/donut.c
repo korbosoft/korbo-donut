@@ -356,68 +356,104 @@ static void set_tex(GRRLIB_texImg *tex, bool reflective) {
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 }
 
-void render_frame(float A, float B, Donut flavor, bool renderingType, bool manual) {
+void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 	static Mtx base_orientation = {
 		{1.0f, 0.0f, 0.0f, 0.0f},
 		{0.0f, 1.0f, 0.0f, 0.0f},
 		{0.0f, 0.0f, 1.0f, 0.0f}
 	};
-	static float z_rad = 0.0f;
+	static f32 z_rad = 0.0f;
+
+	static bool last_manual = false;
 
 	Mtx model, rot_z, model2, normal;
 
 	s8 stick_x = PAD_StickX(0);
 	s8 stick_y = PAD_StickY(0);
 
-	float norm_x = 0.0f;
-	float norm_y = 0.0f;
+	f32 norm_x = 0.0f;
+	f32 norm_y = 0.0f;
+	f32 c_magnitude = 0.0f;
+	f32 c_direction_x = 0.0f;
 
-	if (abs(stick_x) > GC_DEADZONE) norm_x = (float)stick_x / 128.0f;
-	if (abs(stick_y) > GC_DEADZONE) norm_y = (float)stick_y / 128.0f;
+	const f32 GC_MAX = 100.0f;
+
+	if (stick_x > DEADZONE)       norm_x = (f32)(stick_x - DEADZONE) / (GC_MAX - DEADZONE);
+	else if (stick_x < -DEADZONE) norm_x = (f32)(stick_x + DEADZONE) / (GC_MAX - DEADZONE);
+
+	if (stick_y > DEADZONE)       norm_y = (f32)(stick_y - DEADZONE) / (GC_MAX - DEADZONE);
+	else if (stick_y < -DEADZONE) norm_y = (f32)(stick_y + DEADZONE) / (GC_MAX - DEADZONE);
+
+	if (norm_x > 1.0f) norm_x = 1.0f; else if (norm_x < -1.0f) norm_x = -1.0f;
+	if (norm_y > 1.0f) norm_y = 1.0f; else if (norm_y < -1.0f) norm_y = -1.0f;
+
+#ifdef HW_RVL
+	expansion_t exp;
+	WPAD_Expansion(0, &exp);
+
+	if (exp.type == WPAD_EXP_CLASSIC) {
+		f32 l_mag = exp.classic.ljs.mag;
+		f32 l_ang = exp.classic.ljs.ang;
+
+		if (l_mag > 0.18f) {
+			f32 rescaled_l_mag = (l_mag - 0.18f) / (1.0f - 0.18f);
+			norm_x = rescaled_l_mag * sinf(l_ang * (M_PI / 180.0f));
+			norm_y = rescaled_l_mag * cosf(l_ang * (M_PI / 180.0f));
+		}
+
+		if (exp.classic.rjs.mag > 0.20f) {
+			c_magnitude = (exp.classic.rjs.mag - 0.20f) / (1.0f - 0.20f);
+			c_direction_x = sinf(exp.classic.rjs.ang * (M_PI / 180.0f)) * c_magnitude;
+		}
+	}
+#endif
+
+	if (manual && !last_manual) {
+		guMtxIdentity(base_orientation);
+		z_rad = 0.0f;
+	}
+	last_manual = manual;
+
+	if (c_magnitude == 0.0f) {
+		s8 c_stick_x = PAD_SubStickX(0);
+		s8 c_stick_y = PAD_SubStickY(0);
+
+		f32 fx = (f32)c_stick_x;
+		f32 fy = (f32)c_stick_y;
+		f32 gc_c_mag = sqrtf((fx * fx) + (fy * fy));
+
+		if (gc_c_mag > (f32)DEADZONE) {
+			c_magnitude = (gc_c_mag - (f32)DEADZONE) / (GC_MAX - (f32)DEADZONE);
+			c_direction_x = (fx / gc_c_mag) * c_magnitude;
+		}
+	}
+
+	if (c_magnitude > 0.0f) {
+		z_rad += c_direction_x * (DONUT_ROTATION_SPEED * (M_PI / 180.0f));
+	}
 
 	if (manual) {
-		if (norm_x != 0.0f || norm_y != 0.0f) {
-			Mtx rot_x, rot_y, incremental_rot;
-			guMtxIdentity(rot_x);
-			guMtxIdentity(rot_y);
+		Mtx rot_x, rot_y, incremental_rot;
 
-			if (norm_y != 0.0f) guMtxRotDeg(rot_x, 'X', norm_y * DONUT_ROTATION_SPEED);
-			if (norm_x != 0.0f) guMtxRotDeg(rot_y, 'Y', norm_x * DONUT_ROTATION_SPEED);
+		guMtxRotDeg(rot_x, 'X', norm_y * DONUT_ROTATION_SPEED);
+		guMtxRotDeg(rot_y, 'Y', norm_x * DONUT_ROTATION_SPEED);
 
-			guMtxConcat(rot_x, rot_y, incremental_rot);
+		guMtxConcat(rot_x, rot_y, incremental_rot);
+		guMtxConcat(base_orientation, incremental_rot, base_orientation);
 
-			guMtxConcat(base_orientation, incremental_rot, base_orientation);
-		}
+		guMtxCopy(base_orientation, model);
 	} else {
 		Mtx auto_rot_x, auto_rot_z;
-		guMtxIdentity(auto_rot_x);
-		guMtxIdentity(auto_rot_z);
-
 		guMtxRotRad(auto_rot_x, 'X', A);
 		guMtxRotRad(auto_rot_z, 'Z', B);
 
 		guMtxConcat(auto_rot_z, auto_rot_x, model);
-
 		z_rad = 0.0f;
 	}
 
-	if (manual) {
-		guMtxCopy(base_orientation, model);
-
-		s8 c_stick_x = PAD_SubStickX(0);
-		s8 c_stick_y = PAD_SubStickY(0);
-
-		float c_magnitude = sqrtf((c_stick_x * c_stick_x) + (c_stick_y * c_stick_y));
-		if (c_magnitude > GC_DEADZONE) {
-			z_rad = atan2f((float)c_stick_y, (float)c_stick_x);
-		}
-		guMtxIdentity(rot_z);
-		guMtxRotRad(rot_z, 'Z', z_rad);
-
-		guMtxConcat(model, rot_z, model2);
-	} else {
-		guMtxCopy(model, model2);
-	}
+	guMtxIdentity(rot_z);
+	guMtxRotRad(rot_z, 'Z', z_rad);
+	guMtxConcat(model, rot_z, model2);
 
 	guMtxTransApply(model2, model2, 0.0f, 0.0f, -(3.0f / sinf(DegToRad(DONUT_FOV) / 2.0f)));
 	guMtxConcat(view, model2, model2);
@@ -550,5 +586,5 @@ void render_frame(float A, float B, Donut flavor, bool renderingType, bool manua
 	*ptr++ = '\0';
 	print(frameBuffer);
 	if (!nonSpaceCharsPrinted)
-		print("\x1b[0;104;37m"STRING_DONUT_ERROR);
+		print("\x1b[0;104;37m" STRING_DONUT_ERROR);
 }

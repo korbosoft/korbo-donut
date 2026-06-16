@@ -1,9 +1,13 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#define GC_DEADZONE 18
+#define DEADZONE 0.20f
 
 #include <ogcsys.h>
+
+#ifdef HW_RVL
+#include <wiiuse/wpad.h>
+#endif
 
 extern u32 wiiPressed;
 extern u16 GCPressed;

@@ -36,8 +36,8 @@
 #define STRING_CONTROLS_BOX \
 "╔═══════════════════════════╦══════════════════════╦═════════════════════════╗" \
 "║ -/X      - Toggle manual  ║ 1/Z   - Use classic  ║                \x1b[4mControls\x1b[0;104;97m ║" \
-"║ +/Y      - Change flavor  ║ rendering method     ║ Manual mode: C-Stick    ║" \
-"║ A        - Toggle music   ║ RESET - I think you  ║ rotates on Z-axis.      ║" \
+"║ +/Y      - Change flavor  ║ rendering method     ║ Manual mode: Sticks     ║" \
+"║ A        - Toggle music   ║ RESET - I think you  ║ rotate donut.           ║" \
 "║ \xfd/START  - Exit           ║ can figure it out :) ║   Press 2/B to go back. ║" \
 "╚═══════════════════════════╩══════════════════════╩═════════════════════════╝"
 #else
@@ -46,8 +46,8 @@
 #define STRING_CONTROLS_BOX \
 "╔═══════════════════════════╦══════════════════════╦═════════════════════════╗" \
 "║ X        - Toggle manual  ║ Z     - Use classic  ║                \x1b[4mControls\x1b[0;104;97m ║" \
-"║ Y        - Change flavor  ║ rendering method     ║ Manual mode: C-Stick    ║" \
-"║ A        - Toggle music   ║ RESET - I think you  ║ rotates on Z-axis.      ║" \
+"║ Y        - Change flavor  ║ rendering method     ║ Manual mode: Sticks     ║" \
+"║ A        - Toggle music   ║ RESET - I think you  ║ rotate donut.           ║" \
 "║ START    - Exit           ║ can figure it out :) ║     Press B to go back. ║" \
 "╚═══════════════════════════╩══════════════════════╩═════════════════════════╝"
 #endif

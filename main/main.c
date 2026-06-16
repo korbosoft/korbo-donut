@@ -59,7 +59,6 @@ int main(int argc, char **argv) {
 	GRRLIB_Init();
 
 	input_init();
-	// WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC);
 
 	// Initialize the file... thing. I can't really call it the "file system", can I?
 	file_init();
@@ -160,21 +159,21 @@ int main(int argc, char **argv) {
 
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
-		if ((wiiPressed & WPAD_BUTTON_1) | (GCPressed & PAD_TRIGGER_Z)) {
+		if ((wiiPressed & (WPAD_BUTTON_1 | WPAD_CLASSIC_BUTTON_ZL | WPAD_CLASSIC_BUTTON_ZR)) | (GCPressed & PAD_TRIGGER_Z)) {
 			renderingType = !renderingType;
-		} else if ((wiiPressed & WPAD_BUTTON_2) | (GCPressed & PAD_BUTTON_B)) {
+		} else if ((wiiPressed & (WPAD_BUTTON_2 | WPAD_CLASSIC_BUTTON_B)) | (GCPressed & PAD_BUTTON_B)) {
 			showControls = !showControls;
-		} else if ((wiiPressed & WPAD_BUTTON_MINUS) | (GCPressed & PAD_BUTTON_X)) {
+		} else if ((wiiPressed & (WPAD_BUTTON_MINUS | WPAD_CLASSIC_BUTTON_X)) | (GCPressed & PAD_BUTTON_X)) {
 			manual = !manual;
-		} else if ((wiiPressed & WPAD_BUTTON_PLUS) | (GCPressed & PAD_BUTTON_Y)) {
+		} else if ((wiiPressed & (WPAD_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_Y)) | (GCPressed & PAD_BUTTON_Y)) {
 			frostingFlavor++;
 			frostingFlavor %= FROSTING_FLAVORS;
 			format_info("Flavor: ", frosting[frostingFlavor].name, frostingName, true);
 			showFrosting = 100;
-		} else if ((wiiPressed & WPAD_BUTTON_A) | (GCPressed & PAD_BUTTON_A)) {
+		} else if ((wiiPressed & (WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A)) | (GCPressed & PAD_BUTTON_A)) {
 			music_pause(paused);
 			paused = !paused;
-		} else if ((wiiPressed & WPAD_BUTTON_HOME) || (GCPressed & PAD_BUTTON_START))
+		} else if ((wiiPressed & (WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME) ) || (GCPressed & PAD_BUTTON_START))
 			break;
 
 		A += 0.035f;
