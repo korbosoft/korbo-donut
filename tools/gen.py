@@ -88,4 +88,4 @@ if __name__ == "__main__":
         ramp.append(densities[index]['char'])
 
     print('const char ramp[] = "' + "".join(ramp) + '"; // generated with tools/gen.py')
-    print('boobulation complete. Bye bye :)')
+    print('boobulation complete. Bye bye ;^)')

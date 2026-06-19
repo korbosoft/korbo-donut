@@ -34,6 +34,7 @@ typedef struct {
 	f32 pos0[3];
 	f32 nrm0[3];
 	f32 tex0[2];
+	u32 col;
 	f32 pos1[3];
 	f32 nrm1[3];
 	f32 tex1[2];
@@ -138,8 +139,8 @@ static void draw_donut(DonutOptions options, bool filled) {
 }
 
 static void draw_frosting(DonutOptions options, bool filled) {
-	const f32 major = options.major - 0.1f;
-	const f32 minor = options.minor + 0.1f;
+	const f32 major = options.major - 0.2f;
+	const f32 minor = options.minor + 0.2f;
 	if ((frostingOptions.major != major) ||
 		(frostingOptions.minor != minor) ||
 		(frostingOptions.col != options.col)) {
@@ -484,7 +485,7 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 	GX_SetScissor(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4);
 
 	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
-	if ((flavor.texture == NONE) && (top != bottom))
+	if (top != bottom)
 		draw_frosting((DonutOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
 
 	GRRLIB_Screen2Texture(0, 0, shapeBuffer, true);
@@ -522,7 +523,7 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 	GX_SetScissor(0,0, DONUT_WIDTH, DONUT_HEIGHT);
 
 	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, bottom}, true);
-	if ((flavor.texture == NONE) & (top != bottom))
+	if (top != bottom)
 		draw_frosting((DonutOptions){DONUT_MINOR, DONUT_MAJOR, top}, true);
 
 	GRRLIB_Screen2Texture(0, 0, donutBuffer, true);
