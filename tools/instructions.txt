@@ -1,4 +1,12 @@
-fontgen.py -> gen.py
-    |
-    V
-fontgen.py (reverse)
+================================================================================
+
+for font generation:
+fontgen.py -> font.h -> gen.py -> donut.c (text ramp variable)
+
+================================================================================
+
+for png optimization (required if not already paletted):
+cd data
+../tools/pngoptimize.sh
+
+================================================================================
