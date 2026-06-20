@@ -60,8 +60,7 @@ CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-BINFILES	:=	$(foreach dir,$(DATA),$(filter-out %.png,$(notdir $(wildcard $(dir)/*.*))))
-PNGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.png))) # Grab PNGs separately
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -72,12 +71,11 @@ else
 	export LD	:=	$(CXX)
 endif
 
-export OFILES_BIN     := $(addsuffix .o,$(BINFILES))
-export OFILES_PNG     := $(PNGFILES:.png=.donuttex.o) # Add this line
+export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
 export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
-export OFILES         := $(OFILES_BIN) $(OFILES_PNG) $(OFILES_SOURCES) # Include OFILES_PNG here
+export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
 
-export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES))) $(PNGFILES:.png=_donuttex.h)
+export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
@@ -130,22 +128,47 @@ $(OFILES_SOURCES) : $(HFILES)
 
 -include $(DEPENDS)
 
-define bin2o-percent
-        $(eval _tmpasm := $(shell mktemp))
-        $(SILENTCMD)bin2s -a 32 -H `(echo $(<F) | tr . _)`.h $% > $(_tmpasm)
-        $(SILENTCMD)$(CC) -x assembler-with-cpp $(CPPFLAGS) $(ASFLAGS) -c $(_tmpasm) -o $(<F).o
-        @rm $(_tmpasm)
+define png-optimize
+	@errcount=0; \
+	rm -f *.png-tmp; \
+	echo "file: '$(1)'"; \
+	echo ""; \
+	echo "step 1: oxipng"; \
+	oxipng "$(1)" -aqomax --strip all --scale16 || errcount=$$(($$errcount + 1)); \
+	if [ "$$errcount" -eq "0" ]; then \
+		size1=$$(wc -c <"$(1)-tmp"); \
+		size2=$$(wc -c <"$(1)"); \
+		diff=$$(($$size1 - $$size2)); \
+		awk "BEGIN {printf \"\n%+.2f%% ($$diff bytes) difference\n\n\", ($$diff / $$size2) * 100}"; \
+		if [ $$size1 -ge $$size2 ]; then \
+			echo "$(1)-tmp >= original file size, discarding..."; \
+			rm -f "$(1)-tmp"; \
+		else \
+			echo "$(1)-tmp is smaller!! replacing original :D"; \
+			mv -f "$(1)-tmp" "$(1)"; \
+		fi; \
+		echo ""; \
+	fi; \
+	if [ "$$errcount" -ne "0" ]; then \
+		echo "optimization failed for $(1)"; \
+	else \
+		echo "success :)"; \
+	fi
 endef
 
+PNG_OFILES := $(filter %.png.o,$(OFILES_BIN))
+define png-sequence-rule
+$(word $(1),$(PNG_OFILES)): | $(word $(shell expr $(1) - 1),$(PNG_OFILES))
+endef
+$(foreach i,$(shell seq 2 $(words $(PNG_OFILES))),$(eval $(call png-sequence-rule,$(i))))
+
 #---------------------------------------------------------------------------------
-%.donuttex.o %_donuttex.h: %.png
+%.png.o	%_png.h :	%.png
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
-	python3 ../tools/png2tex.py $< $*.donuttex
-	@$(eval _tmpasm := $(shell mktemp))
-	@bin2s -a 32 -H $*_donuttex.h $*.donuttex > $(_tmpasm)
-	@$(CC) -x assembler-with-cpp $(CFLAGS) -c $(_tmpasm) -o $*.donuttex.o
-	@rm $(_tmpasm)
+# 	@$(call png-optimize,$<)
+	@$(shell oxipng $< -aqomax --strip all --scale16)
+	@$(bin2o)
 
 -include $(DEPSDIR)/*.d
 

@@ -12,10 +12,10 @@
 
 #include "shape_lut_bin.h"
 
-#include "metal_donuttex.h"
-// #include "tintedMetal_donuttex.h"
-#include "sponge_donuttex.h"
-// #include "sprinkles_donuttex.h"
+#include "metal_png.h"
+// #include "tintedMetal_png.h"
+#include "sponge_png.h"
+// #include "sprinkles_png.h"
 
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
@@ -310,11 +310,11 @@ void donut_init(void) {
 	rainbowTex = GRRLIB_CreateEmptyTexture(12, 12);
 	greyPixel = GRRLIB_CreateEmptyTexture(1, 1);
 	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
-	metalTex = GRRLIB_LoadTexturePNG(metal_donuttex);
+	metalTex = GRRLIB_LoadTexturePNG(metal_png);
 	tintedMetalTex = genTintedMetalTex();
-	spongeTex = GRRLIB_LoadTexturePNG(sponge_donuttex);
+	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
 	munchTex = GRRLIB_CreateEmptyTexture(128, 128);
-	// sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_donuttex);
+	// sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 }
 
 void donut_free(void) {
