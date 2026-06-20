@@ -130,17 +130,28 @@ $(OFILES_SOURCES) : $(HFILES)
 
 define png-optimize
 	@errcount=0; \
-	rm -f *.png-tmp; \
+	rm -f "$(1)-tmp"; \
 	echo "file: '$(1)'"; \
 	echo ""; \
 	echo "step 1: oxipng"; \
 	oxipng "$(1)" -aqomax --strip all --scale16 || errcount=$$(($$errcount + 1)); \
+	echo ""; \
 	if [ "$$errcount" -eq "0" ]; then \
-		size1=$$(wc -c <"$(1)-tmp"); \
-		size2=$$(wc -c <"$(1)"); \
+		echo "step 2: pngquant"; \
+		pngquant "$(1)" --speed 1 -f --ext .png-tmp || errcount=$$(($$errcount + 1)); \
+		echo ""; \
+		if [ "$$errcount" -eq "0" ]; then \
+			echo "step 3: oxipng (again)"; \
+			oxipng "$(1)-tmp" -aqomax --strip all --scale16 || errcount=$$(($$errcount + 1)); \
+			echo ""; \
+		fi; \
+	fi; \
+	if [ "$$errcount" -eq "0" ] && [ -f "$(1)-tmp" ]; then \
+		size1=$$(wc -c < "$(1)-tmp" | tr -d ' '); \
+		size2=$$(wc -c < "$(1)" | tr -d ' '); \
 		diff=$$(($$size1 - $$size2)); \
 		awk "BEGIN {printf \"\n%+.2f%% ($$diff bytes) difference\n\n\", ($$diff / $$size2) * 100}"; \
-		if [ $$size1 -ge $$size2 ]; then \
+		if [ "$$size1" -ge "$$size2" ]; then \
 			echo "$(1)-tmp >= original file size, discarding..."; \
 			rm -f "$(1)-tmp"; \
 		else \
@@ -151,8 +162,6 @@ define png-optimize
 	fi; \
 	if [ "$$errcount" -ne "0" ]; then \
 		echo "optimization failed for $(1)"; \
-	else \
-		echo "success :)"; \
 	fi
 endef
 
@@ -166,8 +175,7 @@ $(foreach i,$(shell seq 2 $(words $(PNG_OFILES))),$(eval $(call png-sequence-rul
 %.png.o	%_png.h :	%.png
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
-# 	@$(call png-optimize,$<)
-	@$(shell oxipng $< -aqomax --strip all --scale16)
+	@$(call png-optimize,$<)
 	@$(bin2o)
 
 -include $(DEPSDIR)/*.d
