@@ -3,6 +3,7 @@
 
 extern Mtx view;
 
+extern void PROXY_Init3dMode(f32 minDist, f32 maxDist, f32 fov, bool texturemode, bool normalmode, f32 aspect);
 extern void PROXY_3dMode(f32 minDist, f32 maxDist, f32 fov, bool texturemode, bool normalmode, f32 aspect);
 
 extern void PROXY_Camera3dSettings(f32 posx, f32 posy, f32 posz,

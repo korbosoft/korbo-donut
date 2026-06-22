@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 		[6] = "Korbo loves you <3",
 		[7] = "Did you know you can change the music?",
 		[8] = "GBA Donut: Gone but not forgotten </3",
-		[9] = "You best not forget the spongebob incident.",
+		[9] = "You best not forget The SpongeBob Incident.",
 		[10] = "so there's this series called HLVRAI and it",
 		[11] = "You love Shit River.",
 	};

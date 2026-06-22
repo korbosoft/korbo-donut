@@ -17,6 +17,8 @@
 #include "sponge_png.h"
 // #include "sprinkles_png.h"
 
+#define DEG2RAD (f32)(M_PI / 180.0f)
+
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
 static GRRLIB_texImg *rainbowTex;
@@ -45,13 +47,14 @@ static DonutOptions frostingOptions;
 
 static DonutModel donutModel[DONUT_RINGS][DONUT_SIDES + 1];
 static DonutModel frostingModel[DONUT_RINGS][DONUT_SIDES + 1];
+static const f32 Z_TRANSLATION = -3.0f / sinf(DegToRad(DONUT_FOV) / 2.0f);
 
 static void draw_donut(DonutOptions options, bool filled) {
 	if ((donutOptions.major != options.major) ||
 		(donutOptions.minor != options.minor) ||
 		(donutOptions.col != options.col)) {
-		const f32 ringDelta = 2.0 * M_PI / DONUT_RINGS;
-		const f32 sideDelta = 2.0 * M_PI / DONUT_SIDES;
+		const f32 ringDelta = 2.0*M_PI / DONUT_RINGS;
+		const f32 sideDelta = 2.0*M_PI / DONUT_SIDES;
 
 		f32 theta = 0.0f;
 		f32 cosTheta = 1.0f;
@@ -377,13 +380,11 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 	f32 c_magnitude = 0.0f;
 	f32 c_direction_x = 0.0f;
 
-	const f32 GC_MAX = 100.0f;
+	if (stick_x > DEADZONE)       norm_x = (f32)(stick_x - DEADZONE) / (STICK_MAX - DEADZONE);
+	else if (stick_x < -DEADZONE) norm_x = (f32)(stick_x + DEADZONE) / (STICK_MAX - DEADZONE);
 
-	if (stick_x > DEADZONE)       norm_x = (f32)(stick_x - DEADZONE) / (GC_MAX - DEADZONE);
-	else if (stick_x < -DEADZONE) norm_x = (f32)(stick_x + DEADZONE) / (GC_MAX - DEADZONE);
-
-	if (stick_y > DEADZONE)       norm_y = (f32)(stick_y - DEADZONE) / (GC_MAX - DEADZONE);
-	else if (stick_y < -DEADZONE) norm_y = (f32)(stick_y + DEADZONE) / (GC_MAX - DEADZONE);
+	if (stick_y > DEADZONE)       norm_y = (f32)(stick_y - DEADZONE) / (STICK_MAX - DEADZONE);
+	else if (stick_y < -DEADZONE) norm_y = (f32)(stick_y + DEADZONE) / (STICK_MAX - DEADZONE);
 
 	if (norm_x > 1.0f) norm_x = 1.0f; else if (norm_x < -1.0f) norm_x = -1.0f;
 	if (norm_y > 1.0f) norm_y = 1.0f; else if (norm_y < -1.0f) norm_y = -1.0f;
@@ -396,15 +397,16 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 		f32 l_mag = exp.classic.ljs.mag;
 		f32 l_ang = exp.classic.ljs.ang;
 
-		if (l_mag > 0.18f) {
-			f32 rescaled_l_mag = (l_mag - 0.18f) / (1.0f - 0.18f);
-			norm_x = rescaled_l_mag * sinf(l_ang * (M_PI / 180.0f));
-			norm_y = rescaled_l_mag * cosf(l_ang * (M_PI / 180.0f));
+		if (l_mag > DEADZONE) {
+			f32 rescaled_l_mag = (l_mag - DEADZONE) / (1.0f - DEADZONE);
+			f32 l_ang_rad = DegToRad(l_ang);
+			norm_x = rescaled_l_mag*sinf(l_ang_rad);
+			norm_y = rescaled_l_mag*cosf(l_ang_rad);
 		}
 
-		if (exp.classic.rjs.mag > 0.20f) {
-			c_magnitude = (exp.classic.rjs.mag - 0.20f) / (1.0f - 0.20f);
-			c_direction_x = sinf(exp.classic.rjs.ang * (M_PI / 180.0f)) * c_magnitude;
+		if (exp.classic.rjs.mag > DEADZONE) {
+			c_magnitude = (exp.classic.rjs.mag - DEADZONE) / (1.0f - DEADZONE);
+			c_direction_x = sinf(DegToRad(exp.classic.rjs.ang))*c_magnitude;
 		}
 	}
 #endif
@@ -421,23 +423,23 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 
 		f32 fx = (f32)c_stick_x;
 		f32 fy = (f32)c_stick_y;
-		f32 gc_c_mag = sqrtf((fx * fx) + (fy * fy));
+		f32 gc_c_mag = sqrtf((fx*fx) + (fy*fy));
 
-		if (gc_c_mag > (f32)DEADZONE) {
-			c_magnitude = (gc_c_mag - (f32)DEADZONE) / (GC_MAX - (f32)DEADZONE);
-			c_direction_x = (fx / gc_c_mag) * c_magnitude;
+		if (gc_c_mag > DEADZONE) {
+			c_magnitude = (gc_c_mag - DEADZONE) / (STICK_MAX - DEADZONE);
+			c_direction_x = (fx / gc_c_mag)*c_magnitude;
 		}
 	}
 
 	if (c_magnitude > 0.0f) {
-		z_rad += c_direction_x * (DONUT_ROTATION_SPEED * (M_PI / 180.0f));
+		z_rad += c_direction_x*(DegToRad(DONUT_ROTATION_SPEED));
 	}
 
 	if (manual) {
 		Mtx rot_x, rot_y, incremental_rot;
 
-		guMtxRotDeg(rot_x, 'X', norm_y * DONUT_ROTATION_SPEED);
-		guMtxRotDeg(rot_y, 'Y', norm_x * DONUT_ROTATION_SPEED);
+		guMtxRotDeg(rot_x, 'X', norm_y*DONUT_ROTATION_SPEED);
+		guMtxRotDeg(rot_y, 'Y', norm_x*DONUT_ROTATION_SPEED);
 
 		guMtxConcat(rot_x, rot_y, incremental_rot);
 		guMtxConcat(base_orientation, incremental_rot, base_orientation);
@@ -456,7 +458,7 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 	guMtxRotRad(rot_z, 'Z', z_rad);
 	guMtxConcat(model, rot_z, model2);
 
-	guMtxTransApply(model2, model2, 0.0f, 0.0f, -(3.0f / sinf(DegToRad(DONUT_FOV) / 2.0f)));
+	guMtxTransApply(model2, model2, 0.0f, 0.0f, Z_TRANSLATION);
 	guMtxConcat(view, model2, model2);
 
 	GX_LoadPosMtxImm(model2, GX_PNMTX0);
@@ -535,32 +537,29 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 
 	print("\x1b[2H");
 	bool nonSpaceCharsPrinted = false;
+
 	for(u8 j = 0; j < DONUT_HEIGHT; j++) {
 		for(u8 i = 0; i < DONUT_WIDTH; i++) {
-			u16 lutIndex = 0;
-			u16 l_avg = 0;
 			u32 col = GRRLIB_GetPixelFromtexImg(i, j, donutBuffer);
-			u8 r = R(col), g = G(col), b = B(col);
+			if (col & 0x00FFFFFF) {
+				u8 r = R(col), g = G(col), b = B(col);
 
-			for(u8 py = 0; py < 4; py++) {
-				for(u8 px = 0; px < 2; px++) {
-					u8 img_x = (i*2) + px;
-					u8 img_y = (j*4) + py;
+				u16 lutIndex = 0;
+				u16 l_avg = 0;
 
-					u32 shape = GRRLIB_GetPixelFromtexImg(img_x, img_y, shapeBuffer);
-
-					u8 l = G(shape);
-					// no luminance check needed because shape buffer should always be greyscale
-					u8 val = (l >> 6) & 0x03;
-					u8 shift = (py*2 + px)*2;
-					lutIndex |= (val << shift);
-
-					l_avg += l;
+				for(u8 py = 0; py < 4; py++) {
+					for(u8 px = 0; px < 2; px++) {
+						u8 img_x = (i*2) + px;
+						u8 img_y = (j*4) + py;
+						u32 shape = GRRLIB_GetPixelFromtexImg(img_x, img_y, shapeBuffer);
+						u8 l = G(shape);
+						u8 val = (l >> 6) & 0x03;
+						u8 shift = (py*2 + px)*2;
+						lutIndex |= (val << shift);
+						l_avg += l;
+					}
 				}
-			}
-			// average
-			l_avg >>= 6;
-			if (r + g + b) {
+				l_avg >>= 6;
 				if ((last_r != r) || (last_g != g) || (last_b != b)) {
 					ptr = stpcpy(ptr, "\x1b[38;2;");
 					ptr = u82Str(ptr, r);
