@@ -26,7 +26,7 @@
 "║ \x1b[4mKorbo's Donut Shop v"VERSION" :3\x1b[0;104;97m   \x1b[93m%s\x1b[97m ║" \
 "║ Originally based off \"Wii Donut\" by emilydaemon                            ║" \
 "║ Written, and otherwise created by Korbo Q. Lamp                            ║" \
-"║ Greets to: WiiLink, /r/Ooer, Wii Super Cool          " STRING_CONTROLS   " ║" \
+"║ Greetings to: WiiLink, /r/Ooer, Wii Super Cool.    " STRING_CONTROLS     " ║" \
 "╚════════════════════════════════════════════════════════════════════════════╝"
 
 // honorable mention greet: sudomemo, didn't have enough space for it sadly
