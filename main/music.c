@@ -10,7 +10,7 @@
 #include "file.h"
 #include "text.h"
 
-#include "music_mod.h"
+#include "music_it.h"
 
 #define FILETYPE_COUNT 16
 
@@ -83,8 +83,8 @@ int music_init(char *title_display) {
 		GRRMOD_SetMOD(module,module_size);
 		file_close(f);
 	} else {
-		GRRMOD_SetMOD(music_mod, music_mod_size);
-		strcat(tmp, "mod"); // built-in song should always have a title but whatever
+		GRRMOD_SetMOD(music_it, music_it_size);
+		strcat(tmp, "it"); // built-in song should always have a title but whatever
 	}
 
 	char *title = GRRMOD_GetSongTitle();

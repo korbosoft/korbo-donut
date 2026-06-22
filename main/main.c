@@ -18,8 +18,6 @@
 #include "flavors.h"
 #include "music.h"
 
-#include "music_mod.h"
-
 #define DEFAULT_FIFO_SIZE	(256*1024)
 
 // static GXRModeObj *rmode = NULL;

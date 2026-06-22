@@ -18,8 +18,6 @@ This program supports *most* tracker music formats. https://modarchive.org is a 
 
 e-mail:
 Korbo:       korbin.m.marshall@gmail.com
-
-The default background song is "Addiction" by Jogeir Liljedahl.
 	</long_description>
 </app>
 EOF
