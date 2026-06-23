@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 	};
 
 	if (rand() % 50) {
-		format_splash(splashMessages[rand() % SPLASH_COUNT] ?: "I made a boo boo, yeah~.", splash);
+		format_splash(splashMessages[rand() % SPLASH_COUNT], splash);
 	} else {
 		format_splash("This splash has a 1/50 chance of appearing!", splash);
 	}
