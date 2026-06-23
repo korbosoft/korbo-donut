@@ -1,8 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#define DEADZONE (f32)0.20f
-#define STICK_MAX (f32)100.0f
+#define DEADZONE 0.20f
 
 #include <ogcsys.h>
 

@@ -8,7 +8,6 @@ static guVector _PROXY_look = {0.0f, 0.0f, -100.0f};
 // static guVector _GRRaxisy = {0.0f, 1.0f, 0.0f};
 // static guVector _GRRaxisz = {0.0f, 0.0f, 1.0f};
 // static Mtx _ObjTransformationMtx;
-static Mtx44 m;
 
 void PROXY_Camera3dSettings(f32 posx, f32 posy, f32 posz,
     f32 upx, f32 upy, f32 upz,
@@ -27,17 +26,13 @@ void PROXY_Camera3dSettings(f32 posx, f32 posy, f32 posz,
    _PROXY_look.z = lookz;
 }
 
-void PROXY_Init3dMode(f32 minDist, f32 maxDist, f32 fov, bool texturemode, bool normalmode, f32 aspect) {
+void PROXY_3dMode(f32 minDist, f32 maxDist, f32 fov, bool texturemode, bool normalmode, f32 aspect) {
+    Mtx44 m;
+
     GRRLIB_3dMode(minDist, maxDist, fov, texturemode, normalmode);
     guLookAt(view, &_PROXY_cam, &_PROXY_up, &_PROXY_look);
     guPerspective(m, fov, aspect, minDist, maxDist);
     GX_LoadProjectionMtx(m, GX_PERSPECTIVE);
-}
-
-void PROXY_3dMode(f32 minDist, f32 maxDist, f32 fov, bool texturemode, bool normalmode, f32 aspect) {
-	GRRLIB_3dMode(minDist, maxDist, fov, texturemode, normalmode);
-	guLookAt(view, &_PROXY_cam, &_PROXY_up, &_PROXY_look);
-	GX_LoadProjectionMtx(m, GX_PERSPECTIVE);
 }
 
 // void PROXY_ObjectViewBegin(void) {
