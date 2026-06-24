@@ -4,8 +4,9 @@
 #define FROSTING_FLAVORS 23
 
 enum DonutSpecial {
-	NORMAL,
+	MAPPED,
 	GHOSTLY,
+	REFLECTIVE
 };
 
 enum DonutTexture {
@@ -21,106 +22,106 @@ typedef struct {
 	GXColor top;
 	GXColor bottom;
 	enum DonutSpecial special;
-	enum DonutTexture texture;
-} Donut;
+	enum DonutTexture tex;
+} donut_t;
 
-static const Donut frosting[FROSTING_FLAVORS] = {
+static const donut_t flavors[FROSTING_FLAVORS] = {
 	{
 		"Powdered",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Lard Lad",
 		{245, 128, 195, 255},
 		{206, 137, 55, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Chocolate",
 		{112, 58, 42, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Purple",
 		{138, 110, 210, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Lemon",
 		{242, 255, 122, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Strawberry",
 		{255, 113, 107, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Pumpkin",
 		{255, 144, 0, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Key Lime",
 		{189, 255, 130, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Blueberry",
 		{105, 110, 255, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Caramel",
 		{203, 111, 57, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Pistachio",
 		{156, 255, 110, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Toxic Waste",
 		{0, 255, 0, 255},
 		{0, 255, 0, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Glazed",
 		{255, 226, 187, 255},
 		{255, 226, 187, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
 		"Bagel",
 		{255, 187, 98, 255},
 		{255, 187, 98, 255},
-		NORMAL,
+		MAPPED,
 		NONE
 	},
 	{
@@ -134,56 +135,56 @@ static const Donut frosting[FROSTING_FLAVORS] = {
 		"Uranium-235",
 		{0, 255, 0, 255},
 		{0, 255, 0, 255},
-		NORMAL,
+		REFLECTIVE,
 		METAL
 	},
 	{
 		"Rainbow",
 		{128, 128, 128, 255},
 		{128, 128, 128, 255},
-		NORMAL,
+		REFLECTIVE,
 		RAINBOW
 	},
 	{
 		"Pastel",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
-		NORMAL,
+		REFLECTIVE,
 		RAINBOW
 	},
 	{
 		"Chrome",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
-		NORMAL,
+		REFLECTIVE,
 		METAL
 	},
 	{
 		"Gold",
 		{255, 224, 0, 255},
 		{255, 224, 0, 255},
-		NORMAL,
+		REFLECTIVE,
 		METAL
 	},
 	{
 		"Aluminum",
 		{128, 128, 144, 255},
 		{128, 128, 144, 255},
-		NORMAL,
+		REFLECTIVE,
 		METAL
 	},
 	{
 		"Sponge",
 		{128, 128, 128, 255},
 		{128, 128, 128, 255},
-		NORMAL,
+		MAPPED,
 		SPONGE
 	},
 	{
 		"Holographic",
 		{128, 128, 128, 255},
 		{128, 128, 128, 255},
-		NORMAL,
+		REFLECTIVE,
 		MUNCH
 	}
 };

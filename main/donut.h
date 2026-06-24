@@ -26,6 +26,6 @@ typedef struct {
 
 extern void donut_init(void);
 extern void donut_free(void);
-extern void render_frame(float A, float B, Donut flavor, bool renderingType, bool manual);
+extern void render_frame(float A, float B, donut_t flavor, bool renderingType, bool manual);
 
 #endif

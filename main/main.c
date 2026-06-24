@@ -26,7 +26,7 @@ static void *cxfb = NULL;
 static bool paused = true;
 static bool renderingType = false;
 static bool manual = false;
-static u8 frostingFlavor = 0;
+static u8 flavorFlavor = 0;
 
 #ifndef HW_RVL
 static void GetPreferredMode(GXRModeObj *mode) {
@@ -47,7 +47,7 @@ static void GetPreferredMode(GXRModeObj *mode) {
 #endif
 
 int main(int argc, char **argv) {
-	char splash[44], title[83], frostingName[83]/*, doughName[83]*/;
+	char splash[44], title[83], flavorName[83]/*, doughName[83]*/;
 	bool showControls = false;
 	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
 		input_scan();
 		input_down(0, 0);
 
-		render_frame(A, B, frosting[frostingFlavor], renderingType, manual);
+		render_frame(A, B, flavors[flavorFlavor], renderingType, manual);
 
 		if (showControls) {
 			print("\x1b[23H" "\x1b[0;104;97m" STRING_CONTROLS_BOX "\x1b[40m");
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
 			showFrosting--;
 
 		print("\x1b[H");
-		print(showFrosting ? frostingName : title);
+		print(showFrosting ? flavorName : title);
 		print("\x1b[0;0;0m");
 
 		VIDEO_Flush();
@@ -164,9 +164,9 @@ int main(int argc, char **argv) {
 		} else if ((wiiPressed & (WPAD_BUTTON_MINUS | WPAD_CLASSIC_BUTTON_X)) | (GCPressed & PAD_BUTTON_X)) {
 			manual = !manual;
 		} else if ((wiiPressed & (WPAD_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_Y)) | (GCPressed & PAD_BUTTON_Y)) {
-			frostingFlavor++;
-			frostingFlavor %= FROSTING_FLAVORS;
-			format_info("Flavor: ", frosting[frostingFlavor].name, frostingName, true);
+			flavorFlavor++;
+			flavorFlavor %= FROSTING_FLAVORS;
+			format_info("Flavor: ", flavors[flavorFlavor].name, flavorName, true);
 			showFrosting = 100;
 		} else if ((wiiPressed & (WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A)) | (GCPressed & PAD_BUTTON_A)) {
 			music_pause(paused);

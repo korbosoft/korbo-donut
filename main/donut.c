@@ -6,26 +6,15 @@
 #include "colors.h"
 #include "donut.h"
 #include "grrproxy.h"
-#include "strings.h"
-#include "text.h"
 #include "input.h"
+#include "strings.h"
+#include "tex.h"
+#include "text.h"
 
 #include "shape_lut_bin.h"
 
-#include "metal_png.h"
-// #include "tintedMetal_png.h"
-#include "sponge_png.h"
-// #include "sprinkles_png.h"
-
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
-static GRRLIB_texImg *rainbowTex;
-static GRRLIB_texImg *greyPixel;
-static GRRLIB_texImg *metalTex;
-static GRRLIB_texImg *tintedMetalTex;
-static GRRLIB_texImg *spongeTex;
-static GRRLIB_texImg *munchTex;
-// static GRRLIB_texImg *sprinklesTex;
 
 static u16 munch_timer;
 static u16 rainbow_timer;
@@ -246,118 +235,18 @@ static void draw_frosting(DonutOptions options, bool filled) {
 	}
 }
 
-static void makeRainbowTex(GRRLIB_texImg *tex, u16 t) {
-	const u16 width = tex->w;
-	const u16 height = tex->h;
-
-	const f32 center_x = (width - 1) / 2.0f;
-	const f32 center_y = (height - 1) / 2.0f;
-	const f32 scale = 2.0f / height;
-
-	for (u16 j = 0; j < height; j++) {
-		f32 y = j - center_y;
-		f32 y2 = y*y;
-
-		for (u16 i = 0; i < width; i++) {
-			f32 x = i - center_x;
-
-			f32 p = -(sqrtf(x*x + y2) - (f32)t/8.0f)*scale;
-
-			f32 r = sinf(M_PI*p);
-			f32 g = sinf(M_PI*(p + (1.0f/3.0f)));
-			f32 b = sinf(M_PI*(p + (2.0f/3.0f)));
-
-			GRRLIB_SetPixelTotexImg(i, j, tex,
-									RGBA((u8)(r*r*255),
-										 (u8)(g*g*255),
-										 (u8)(b*b*255),
-										 255));
-		}
-	}
-}
-
-static void genMunchTex(GRRLIB_texImg *tex, u16 t) {
-	const u8 time_1 = t;
-	const u8 time_2 = t/2;
-	const u8 time_3 = t/3;
-	for (u16 y = 0; y < tex->h; y++) {
-		for (u16 x = 0; x < tex->w; x++) {
-			u8 r = x ^ (y - time_1);
-			u8 g = (x ^ y) + time_2;
-			u8 b = x ^ (y + time_3);
-			GRRLIB_SetPixelTotexImg(x, y, tex, RGBA(r, g, b, 255));
-		}
-	}
-}
-
-static GRRLIB_texImg *genTintedMetalTex() {
-	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(metalTex->w, metalTex->h);
-	GRRLIB_BMFX_Grayscale(metalTex, texOut);
-	for (u16 y = 0; y < texOut->h; y++) {
-		for (u16 x = 0; x < texOut->w; x++) {
-			u8 v = G(GRRLIB_GetPixelFromtexImg(x, y, texOut));
-			const f32 min = 48.0f;
-			v = (v/255.0f)*(255.0f - min) + min;
-			GRRLIB_SetPixelTotexImg(x, y, texOut, RGBA(v, v, v, 255));
-		}
-	}
-	return texOut;
-}
-
 void donut_init(void) {
 	shapeBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH*2 + DONUT_WIDTH*2 % 4, DONUT_HEIGHT*4);
 	donutBuffer = GRRLIB_CreateEmptyTexture(DONUT_WIDTH + DONUT_WIDTH % 4, DONUT_HEIGHT + DONUT_HEIGHT % 4);
-	rainbowTex = GRRLIB_CreateEmptyTexture(12, 12);
-	greyPixel = GRRLIB_CreateEmptyTexture(1, 1);
-	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
-	metalTex = GRRLIB_LoadTexturePNG(metal_png);
-	tintedMetalTex = genTintedMetalTex();
-	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
-	munchTex = GRRLIB_CreateEmptyTexture(128, 128);
-	// sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
+	tex_init();
 }
 
 void donut_free(void) {
 	GRRLIB_FreeTexture(shapeBuffer);
 	GRRLIB_FreeTexture(donutBuffer);
-	GRRLIB_FreeTexture(rainbowTex);
-	GRRLIB_FreeTexture(greyPixel);
-	GRRLIB_FreeTexture(metalTex);
-	GRRLIB_FreeTexture(tintedMetalTex);
-	GRRLIB_FreeTexture(spongeTex);
-	GRRLIB_FreeTexture(munchTex);
-	// GRRLIB_FreeTexture(sprinklesTex);
+	tex_free();
 }
-
-static void set_tex(GRRLIB_texImg *tex, bool reflective) {
-	GXTexObj texObj;
-
-	GX_SetNumTexGens(1);
-	if (reflective) {
-		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_NRM, GX_TEXMTX0);
-	} else {
-		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
-	}
-
-	GX_InitTexObj(&texObj, tex->data, tex->w, tex->h, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-	if (GRRLIB_Settings.antialias == false) {
-		GX_InitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
-		GX_SetCopyFilter(GX_FALSE, rmode->sample_pattern, GX_FALSE, rmode->vfilter);
-	} else {
-		GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, GX_TRUE, rmode->vfilter);
-	}
-
-	GX_SetNumTevStages(2);
-	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
-	GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR1A1 );
-	GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
-	GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
-
-	GX_LoadTexObj(&texObj, GX_TEXMAP0);
-}
-
-void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
+void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual) {
 	static Mtx base_orientation = {
 		{1.0f, 0.0f, 0.0f, 0.0f},
 		{0.0f, 1.0f, 0.0f, 0.0f},
@@ -473,7 +362,7 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 	guMtxTransApply(normal, normal, 0.5f, 0.5f, 1.0f);
 	GX_LoadTexMtxImm(normal, GX_TEXMTX0, GX_MTX3x4);
 
-	set_tex(greyPixel, false);
+	set_tex(flavors[0]);
 
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKDARKDARK);
@@ -496,31 +385,12 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 	munch_timer = (munch_timer + 1) % (256*6);
 	rainbow_timer = (rainbow_timer + 1) % 48;
 	genMunchTex(munchTex, munch_timer);
-	makeRainbowTex(rainbowTex, rainbow_timer);
-
-	switch (flavor.texture) {
-		case RAINBOW:
-			set_tex(rainbowTex, true);
-			break;
-		case METAL:
-			if ((top == 0xFFFFFFFF) && (bottom == 0xFFFFFFFF)) {
-				set_tex(metalTex, true);
-			} else {
-				set_tex(tintedMetalTex, true);
-			}
-			break;
-		case SPONGE:
-			set_tex(spongeTex, false);
-			break;
-		case MUNCH:
-			set_tex(munchTex, true);
-			break;
-		default:
-			set_tex(greyPixel, false);
-	}
+	genRainbowTex(rainbowTex, rainbow_timer);
 
 	GX_SetViewport(0,0, DONUT_WIDTH, DONUT_HEIGHT, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH, DONUT_HEIGHT);
+
+	set_tex(flavor);
 
 	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, bottom}, true);
 	if (top != bottom)
@@ -560,7 +430,7 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual) {
 			}
 			// average
 			l_avg >>= 6;
-			if (r + g + b) {
+			if (r | g | b) {
 				if ((last_r != r) || (last_g != g) || (last_b != b)) {
 					ptr = stpcpy(ptr, "\x1b[38;2;");
 					ptr = u82Str(ptr, r);
