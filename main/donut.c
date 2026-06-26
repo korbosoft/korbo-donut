@@ -30,10 +30,7 @@ typedef struct {
 } DonutModel;
 
 static DonutOptions donutOptions;
-static DonutOptions frostingOptions;
-
 static DonutModel donutModel[DONUT_RINGS][DONUT_SIDES + 1];
-static DonutModel frostingModel[DONUT_RINGS][DONUT_SIDES + 1];
 
 static void draw_donut(DonutOptions options, bool filled) {
 	if ((donutOptions.major != options.major) ||
@@ -121,114 +118,6 @@ static void draw_donut(DonutOptions options, bool filled) {
 				GX_Color1u32(donutOptions.col);
 				GX_TexCoord2f32(donutModel[i][j].tex0[0],
 								donutModel[i][j].tex0[1]);
-			}
-			GX_End();
-		}
-	}
-}
-
-static void draw_frosting(DonutOptions options, bool filled) {
-	const f32 major = options.major - 0.2f;
-	const f32 minor = options.minor + 0.2f;
-	if ((frostingOptions.major != major) ||
-		(frostingOptions.minor != minor) ||
-		(frostingOptions.col != options.col)) {
-		const f32 ringDelta = 2.0f*M_PI/DONUT_RINGS;
-		const f32 sideDelta = M_PI/DONUT_SIDES;
-		const f32 waveAmp = 0.5f;
-		const f32 waveFreq = 10.0f;
-
-		f32 theta = 0.0f;
-		f32 cosTheta = 1.0f;
-		f32 sinTheta = 0.0f;
-
-		frostingOptions.major = major;
-		frostingOptions.minor = minor;
-		frostingOptions.col = options.col;
-		for (int i = 0; i < DONUT_RINGS; i++) {
-			const f32 theta1 = theta + ringDelta;
-			const f32 cosTheta1 = cos(theta1);
-			const f32 sinTheta1 = sin(theta1);
-
-			const f32 cutZ0 = waveAmp/2*(waveAmp*2 + sinf(theta*waveFreq));
-			const f32 cutZ1 = waveAmp/2*(waveAmp*2 + sinf(theta1*waveFreq));
-
-			const f32 u0 = (f32)i / DONUT_RINGS;
-			const f32 u1 = (f32)(i + 1) / DONUT_RINGS;
-
-			GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(DONUT_SIDES + 1));
-
-			f32 phi = 0.0f;
-			for (int j = 0; j <= DONUT_SIDES; j++) {
-				const f32 cosPhi = cosf(phi), sinPhi = sinf(phi);
-				const f32 dist = frostingOptions.major + frostingOptions.minor*cosPhi;
-
-				const f32 v = (f32)j / DONUT_SIDES;
-
-				const f32 z = frostingOptions.minor*sinPhi;
-				f32 z1 = z;
-				if (z1 < cutZ1) z1 = cutZ1;
-
-				GX_Position3f32(cosTheta1*dist, -sinTheta1*dist, z1);
-				frostingModel[i][j].pos1[0] = cosTheta1*dist;
-				frostingModel[i][j].pos1[1] = -sinTheta1*dist;
-				frostingModel[i][j].pos1[2] = z1;
-				GX_Normal3f32(cosTheta1*cosPhi, -sinTheta1*cosPhi, sinPhi);
-				frostingModel[i][j].nrm1[0] = cosTheta1*cosPhi;
-				frostingModel[i][j].nrm1[1] = -sinTheta1*cosPhi;
-				frostingModel[i][j].nrm1[2] = sinPhi;
-				GX_Color1u32(frostingOptions.col);
-				GX_TexCoord2f32(u1, v);
-				frostingModel[i][j].tex1[0] = u1;
-				frostingModel[i][j].tex1[1] = v;
-
-				f32 z0 = z;
-				if (z0 < cutZ0) z0 = cutZ0;
-
-				GX_Position3f32(cosTheta*dist, -sinTheta*dist, z0);
-				frostingModel[i][j].pos0[0] = cosTheta*dist;
-				frostingModel[i][j].pos0[1] = -sinTheta*dist;
-				frostingModel[i][j].pos0[2] = z0;
-				GX_Normal3f32(cosTheta*cosPhi, -sinTheta*cosPhi, sinPhi);
-				frostingModel[i][j].nrm0[0] = cosTheta*cosPhi;
-				frostingModel[i][j].nrm0[1] = -sinTheta*cosPhi;
-				frostingModel[i][j].nrm0[2] = sinPhi;
-				GX_Color1u32(frostingOptions.col);
-				GX_TexCoord2f32(u0, v);
-				frostingModel[i][j].tex0[0] = u0;
-				frostingModel[i][j].tex0[1] = v;
-
-				phi += sideDelta;
-			}
-			GX_End();
-
-			cosTheta = cosTheta1;
-			sinTheta = sinTheta1;
-			theta = theta1;
-		}
-	} else {
-		for (int i = 0; i < DONUT_RINGS; i++) {
-			GX_Begin(filled ? GX_TRIANGLESTRIP : GX_LINESTRIP, GX_VTXFMT0, 2*(DONUT_SIDES + 1));
-			for (int j = 0; j <= DONUT_SIDES; j++) {
-				GX_Position3f32(frostingModel[i][j].pos1[0],
-								frostingModel[i][j].pos1[1],
-								frostingModel[i][j].pos1[2]);
-				GX_Normal3f32(frostingModel[i][j].nrm1[0],
-							  frostingModel[i][j].nrm1[1],
-							  frostingModel[i][j].nrm1[2]);
-				GX_Color1u32(frostingOptions.col);
-				GX_TexCoord2f32(frostingModel[i][j].tex1[0],
-								frostingModel[i][j].tex1[1]);
-
-				GX_Position3f32(frostingModel[i][j].pos0[0],
-								frostingModel[i][j].pos0[1],
-								frostingModel[i][j].pos0[2]);
-				GX_Normal3f32(frostingModel[i][j].nrm0[0],
-							  frostingModel[i][j].nrm0[1],
-							  frostingModel[i][j].nrm0[2]);
-				GX_Color1u32(frostingOptions.col);
-				GX_TexCoord2f32(frostingModel[i][j].tex0[0],
-								frostingModel[i][j].tex0[1]);
 			}
 			GX_End();
 		}
@@ -367,15 +256,12 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKDARKDARK);
 
-	u32 top = RGBA(flavor.top.r, flavor.top.g, flavor.top.b, flavor.top.a);
-	u32 bottom = RGBA(flavor.bottom.r, flavor.bottom.g, flavor.bottom.b, flavor.bottom.a);
+	u32 vertex = RGBA(flavor.vertex.r, flavor.vertex.g, flavor.vertex.b, flavor.vertex.a);
 
 	GX_SetViewport(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4);
 
 	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
-	if (top != bottom)
-		draw_frosting((DonutOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
 
 	GRRLIB_Screen2Texture(0, 0, shapeBuffer, true);
 
@@ -385,16 +271,15 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 	munch_timer = (munch_timer + 1) % (256*6);
 	rainbow_timer = (rainbow_timer + 1) % 48;
 	genMunchTex(munchTex, munch_timer);
-	genRainbowTex(rainbowTex, rainbow_timer);
+	genRainbowTex(rainbowTex, rainbow_timer, false);
+	genRainbowTex(pastelTex, rainbow_timer, true);
 
 	GX_SetViewport(0,0, DONUT_WIDTH, DONUT_HEIGHT, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH, DONUT_HEIGHT);
 
 	set_tex(flavor);
 
-	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, bottom}, true);
-	if (top != bottom)
-		draw_frosting((DonutOptions){DONUT_MINOR, DONUT_MAJOR, top}, true);
+	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, vertex}, true);
 
 	GRRLIB_Screen2Texture(0, 0, donutBuffer, true);
 

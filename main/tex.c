@@ -4,15 +4,20 @@
 
 #include "tex.h"
 
-#define GXColor2RGBA(gx) RGBA(gx.r, gx.g, gx.b, gx.a)
+#define GXColor2RGBA(gx) ( (u32)( ( ((u32)(gx.r))        <<24) |  \
+								  ((((u32)(gx.g)) &0xFF) <<16) |  \
+								  ((((u32)(gx.b)) &0xFF) << 8) |  \
+								  ( ((u32)(gx.a)) &0xFF      ) ) )
 
+#include "frosting_png.h"
 #include "metal_png.h"
-// #include "tintedMetal_png.h"
 #include "sponge_png.h"
 // #include "sprinkles_png.h"
 
+GRRLIB_texImg *whitePixel;
+GRRLIB_texImg *frostingTex;
 GRRLIB_texImg *rainbowTex;
-GRRLIB_texImg *greyPixel;
+GRRLIB_texImg *pastelTex;
 GRRLIB_texImg *metalTex;
 GRRLIB_texImg *tintedMetalTex;
 GRRLIB_texImg *spongeTex;
@@ -23,28 +28,33 @@ void set_tex(donut_t flavor) {
 	GXTexObj texObj;
 	GRRLIB_texImg *tex;
 
-	switch (flavor.tex) {
-		case RAINBOW:
-			tex = rainbowTex;
-			break;
-		case METAL:
-			if ((GXColor2RGBA(flavor.top) ^ 0xFFFFFFFF) |
-				(GXColor2RGBA(flavor.bottom) ^ 0xFFFFFFFF)) {
-				tex = metalTex;
+	if (flavor.special == FROSTED) {
+		tex = frostingTex;
+	} else {
+		switch (flavor.tex) {
+			case RAINBOW:
+				tex = rainbowTex;
+				break;
+			case PASTEL:
+				tex = pastelTex;
+				break;
+			case METAL:
+				if (GXColor2RGBA(flavor.vertex) == 0xFFFFFFFF) {
+					tex = metalTex;
 				} else {
 					tex = tintedMetalTex;
 				}
 				break;
-		case SPONGE:
-			tex = spongeTex;
-			break;
-		case MUNCH:
-			tex = munchTex;
-			break;
-		default:
-			tex = greyPixel;
+			case SPONGE:
+				tex = spongeTex;
+				break;
+			case MUNCH:
+				tex = munchTex;
+				break;
+			default:
+				tex = whitePixel;
+		}
 	}
-
 	GX_SetNumTexGens(1);
 	if (flavor.special == REFLECTIVE) {
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX3x4, GX_TG_NRM, GX_TEXMTX0);
@@ -60,18 +70,29 @@ void set_tex(donut_t flavor) {
 		GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, GX_TRUE, rmode->vfilter);
 	}
 
-	GX_SetNumTevStages(2);
-	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
-	GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR1A1 );
-	GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV );
-	GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
+	if (flavor.special == FROSTED) {
+		GX_SetNumTevStages(2);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
+		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
+		GX_SetTevColor(GX_TEVREG0, flavor.top);
+		GX_SetTevColor(GX_TEVREG1, flavor.bottom);
 
+		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_C0, GX_CC_C1, GX_CC_TEXC, GX_CC_ZERO);
+		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+		GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
+		GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+	} else {
+		GX_SetNumTevStages(1);
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
+		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
+
+	}
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 }
 
 
-void genRainbowTex(GRRLIB_texImg *tex, u16 t) {
+void genRainbowTex(GRRLIB_texImg *tex, u16 t, bool pastel) {
 	const u16 width = tex->w;
 	const u16 height = tex->h;
 
@@ -92,11 +113,17 @@ void genRainbowTex(GRRLIB_texImg *tex, u16 t) {
 			f32 g = sinf(M_PI*(p + (1.0f/3.0f)));
 			f32 b = sinf(M_PI*(p + (2.0f/3.0f)));
 
-			GRRLIB_SetPixelTotexImg(i, j, tex,
-									RGBA((u8)(r*r*255),
-										 (u8)(g*g*255),
-										 (u8)(b*b*255),
-										 255));
+			u16 mult = pastel ? 510 : 255;
+
+			r *= r*mult;
+			g *= g*mult;
+			b *= b*mult;
+
+			if (r > 255) r = 255;
+			if (g > 255) g = 255;
+			if (b > 255) b = 255;
+
+			GRRLIB_SetPixelTotexImg(i, j, tex, RGBA((u8)r, (u8)g, (u8)b, 255));
 		}
 	}
 }
@@ -130,9 +157,11 @@ static GRRLIB_texImg *genTintedMetalTex() {
 }
 
 void tex_init(void) {
+	whitePixel = GRRLIB_CreateEmptyTexture(1, 1);
+	frostingTex = GRRLIB_LoadTexturePNG(frosting_png);
 	rainbowTex = GRRLIB_CreateEmptyTexture(12, 12);
-	greyPixel = GRRLIB_CreateEmptyTexture(1, 1);
-	GRRLIB_SetPixelTotexImg(0, 0, greyPixel, 0x808080FF);
+	pastelTex = GRRLIB_CreateEmptyTexture(12, 12);
+	GRRLIB_SetPixelTotexImg(0, 0, whitePixel, 0xFFFFFFFF);
 	metalTex = GRRLIB_LoadTexturePNG(metal_png);
 	tintedMetalTex = genTintedMetalTex();
 	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
@@ -141,8 +170,10 @@ void tex_init(void) {
 }
 
 void tex_free(void) {
+	GRRLIB_FreeTexture(whitePixel);
+	GRRLIB_FreeTexture(frostingTex);
 	GRRLIB_FreeTexture(rainbowTex);
-	GRRLIB_FreeTexture(greyPixel);
+	GRRLIB_FreeTexture(pastelTex);
 	GRRLIB_FreeTexture(metalTex);
 	GRRLIB_FreeTexture(tintedMetalTex);
 	GRRLIB_FreeTexture(spongeTex);

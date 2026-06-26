@@ -29,6 +29,9 @@ static bool manual = false;
 static u8 flavorFlavor = 0;
 
 #ifndef HW_RVL
+// gamecube progressive with libogc is fucked,
+// immediately assumes progressive is possible
+// if component cables are plugged in
 static void GetPreferredMode(GXRModeObj *mode) {
 	switch (VIDEO_GetCurrentTvMode()) {
 		case VI_NTSC:
