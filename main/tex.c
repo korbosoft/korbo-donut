@@ -74,8 +74,8 @@ void set_tex(donut_t flavor) {
 		GX_SetNumTevStages(2);
 		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
 		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
-		GX_SetTevColor(GX_TEVREG0, flavor.top);
-		GX_SetTevColor(GX_TEVREG1, flavor.bottom);
+		GX_SetTevColor(GX_TEVREG0, flavor.bottom);
+		GX_SetTevColor(GX_TEVREG1, flavor.top);
 
 		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
 		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_C0, GX_CC_C1, GX_CC_TEXC, GX_CC_ZERO);
