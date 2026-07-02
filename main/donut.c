@@ -135,6 +135,7 @@ void donut_free(void) {
 	GRRLIB_FreeTexture(donutBuffer);
 	tex_free();
 }
+
 void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual) {
 	static Mtx base_orientation = {
 		{1.0f, 0.0f, 0.0f, 0.0f},
@@ -155,13 +156,11 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 	f32 c_magnitude = 0.0f;
 	f32 c_direction_x = 0.0f;
 
-	const f32 GC_MAX = 100.0f;
+	if (stick_x > GC_DEADZONE)       norm_x = (f32)(stick_x - GC_DEADZONE) / (100 - GC_DEADZONE);
+	else if (stick_x < -GC_DEADZONE) norm_x = (f32)(stick_x + GC_DEADZONE) / (100 - GC_DEADZONE);
 
-	if (stick_x > DEADZONE)       norm_x = (f32)(stick_x - DEADZONE) / (GC_MAX - DEADZONE);
-	else if (stick_x < -DEADZONE) norm_x = (f32)(stick_x + DEADZONE) / (GC_MAX - DEADZONE);
-
-	if (stick_y > DEADZONE)       norm_y = (f32)(stick_y - DEADZONE) / (GC_MAX - DEADZONE);
-	else if (stick_y < -DEADZONE) norm_y = (f32)(stick_y + DEADZONE) / (GC_MAX - DEADZONE);
+	if (stick_y > GC_DEADZONE)       norm_y = (f32)(stick_y - GC_DEADZONE) / (100 - GC_DEADZONE);
+	else if (stick_y < -GC_DEADZONE) norm_y = (f32)(stick_y + GC_DEADZONE) / (100 - GC_DEADZONE);
 
 	if (norm_x > 1.0f) norm_x = 1.0f; else if (norm_x < -1.0f) norm_x = -1.0f;
 	if (norm_y > 1.0f) norm_y = 1.0f; else if (norm_y < -1.0f) norm_y = -1.0f;
@@ -174,14 +173,14 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 		f32 l_mag = exp.classic.ljs.mag;
 		f32 l_ang = exp.classic.ljs.ang;
 
-		if (l_mag > 0.18f) {
-			f32 rescaled_l_mag = (l_mag - 0.18f) / (1.0f - 0.18f);
+		if (l_mag > DEADZONE) {
+			f32 rescaled_l_mag = (l_mag - DEADZONE) / (1.0f - DEADZONE);
 			norm_x = rescaled_l_mag * sinf(l_ang * (M_PI / 180.0f));
 			norm_y = rescaled_l_mag * cosf(l_ang * (M_PI / 180.0f));
 		}
 
-		if (exp.classic.rjs.mag > 0.20f) {
-			c_magnitude = (exp.classic.rjs.mag - 0.20f) / (1.0f - 0.20f);
+		if (exp.classic.rjs.mag > DEADZONE) {
+			c_magnitude = (exp.classic.rjs.mag - DEADZONE) / (1.0f - DEADZONE);
 			c_direction_x = sinf(exp.classic.rjs.ang * (M_PI / 180.0f)) * c_magnitude;
 		}
 	}
@@ -202,7 +201,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 		f32 gc_c_mag = sqrtf((fx * fx) + (fy * fy));
 
 		if (gc_c_mag > (f32)DEADZONE) {
-			c_magnitude = (gc_c_mag - (f32)DEADZONE) / (GC_MAX - (f32)DEADZONE);
+			c_magnitude = (gc_c_mag - (f32)DEADZONE) / (100 - (f32)DEADZONE);
 			c_direction_x = (fx / gc_c_mag) * c_magnitude;
 		}
 	}
@@ -214,11 +213,17 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 	if (manual) {
 		Mtx rot_x, rot_y, incremental_rot;
 
-		guMtxRotDeg(rot_x, 'X', norm_y * DONUT_ROTATION_SPEED);
-		guMtxRotDeg(rot_y, 'Y', norm_x * DONUT_ROTATION_SPEED);
+		// ONLY modify the base orientation if there is actual input!
+		if (norm_x != 0.0f || norm_y != 0.0f) {
+			guMtxRotDeg(rot_x, 'X', norm_y * DONUT_ROTATION_SPEED);
+			guMtxRotDeg(rot_y, 'Y', norm_x * DONUT_ROTATION_SPEED);
 
-		guMtxConcat(rot_x, rot_y, incremental_rot);
-		guMtxConcat(base_orientation, incremental_rot, base_orientation);
+			guMtxConcat(rot_x, rot_y, incremental_rot);
+			guMtxConcat(base_orientation, incremental_rot, base_orientation);
+		} else {
+			// Optional: Periodically re-normalize base_orientation here if it drift-warps
+			// from heavy use, though stopping the conk-per-frame usually cures it.
+		}
 
 		guMtxCopy(base_orientation, model);
 	} else {
@@ -286,8 +291,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 	char frameBuffer[DONUT_WIDTH*DONUT_HEIGHT*20 + 1];
 	char *ptr = frameBuffer;
 	s16 last_r = -1, last_g = -1, last_b = -1;
-	const char ramp[] = " -:=+<)%}Ics7fnCo3wmSd6VAXUK8R@Q"; // generated with tools/gen.py
-
+	const char ramp[] = " :+)}rvuj5bhED0Q"; // generated with tools/gen.py
 	print("\x1b[2H");
 	bool nonSpaceCharsPrinted = false;
 	for(u8 j = 0; j < DONUT_HEIGHT; j++) {
@@ -314,7 +318,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 				}
 			}
 			// average
-			l_avg >>= 6;
+			l_avg >>= 7;
 			if (r | g | b) {
 				if ((last_r != r) || (last_g != g) || (last_b != b)) {
 					ptr = stpcpy(ptr, "\x1b[38;2;");

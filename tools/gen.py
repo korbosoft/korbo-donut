@@ -83,8 +83,8 @@ if __name__ == "__main__":
 
     ramp = []
     num_chars = len(densities)
-    for i in range(32):
-        index = int(i * (num_chars - 1) / 31)
+    for i in range(16):
+        index = int(i * (num_chars - 1) / 15)
         ramp.append(densities[index]['char'])
 
     print('const char ramp[] = "' + "".join(ramp) + '"; // generated with tools/gen.py')
