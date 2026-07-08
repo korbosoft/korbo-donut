@@ -3,6 +3,8 @@ import re
 import numpy
 import struct
 
+RAMP_LENGTH = 12
+
 def get_signatures(font):
     signatures = []
     for code in range(32, 126):
@@ -83,8 +85,8 @@ if __name__ == "__main__":
 
     ramp = []
     num_chars = len(densities)
-    for i in range(16):
-        index = int(i * (num_chars - 1) / 15)
+    for i in range(RAMP_LENGTH):
+        index = int(i * (num_chars - 1) / (RAMP_LENGTH - 1))
         ramp.append(densities[index]['char'])
 
     print('const char ramp[] = "' + "".join(ramp) + '"; // generated with tools/gen.py')

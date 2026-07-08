@@ -72,8 +72,8 @@ void set_tex(donut_t flavor) {
 
 	if (flavor.special == FROSTED) {
 		GX_SetNumTevStages(2);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
-		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 		GX_SetTevColor(GX_TEVREG0, flavor.bottom);
 		GX_SetTevColor(GX_TEVREG1, flavor.top);
 
@@ -84,9 +84,8 @@ void set_tex(donut_t flavor) {
 		GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
 	} else {
 		GX_SetNumTevStages(1);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0 );
+		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
-
 	}
 	GX_LoadTexObj(&texObj, GX_TEXMAP0);
 }
@@ -144,13 +143,17 @@ void genMunchTex(GRRLIB_texImg *tex, u16 t) {
 
 static GRRLIB_texImg *genTintedMetalTex() {
 	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(metalTex->w, metalTex->h);
-	GRRLIB_BMFX_Grayscale(metalTex, texOut);
+	const f32 min = 48.0f;
 	for (u16 y = 0; y < texOut->h; y++) {
 		for (u16 x = 0; x < texOut->w; x++) {
-			u8 v = G(GRRLIB_GetPixelFromtexImg(x, y, texOut));
-			const f32 min = 48.0f;
-			v = (v/255.0f)*(255.0f - min) + min;
-			GRRLIB_SetPixelTotexImg(x, y, texOut, RGBA(v, v, v, 255));
+			u32 col = GRRLIB_GetPixelFromtexImg(x, y, metalTex);
+			u8 r = R(col);
+			u8 g = G(col);
+			u8 b = B(col);
+			r = (r/255.0f)*(255.0f - min) + min;
+			g = (g/255.0f)*(255.0f - min) + min;
+			b = (b/255.0f)*(255.0f - min) + min;
+			GRRLIB_SetPixelTotexImg(x, y, texOut, RGBA(r, g, b, 255));
 		}
 	}
 	return texOut;
