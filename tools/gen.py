@@ -3,7 +3,7 @@ import re
 import numpy
 import struct
 
-RAMP_LENGTH = 12
+RAMP_LENGTH = 16
 
 def get_signatures(font):
     signatures = []
