@@ -28,27 +28,6 @@ static bool renderingType = false;
 static bool manual = false;
 static u8 flavorFlavor = 0;
 
-#ifndef HW_RVL
-// gamecube progressive with libogc is fucked,
-// immediately assumes progressive is possible
-// if component cables are plugged in
-static void GetPreferredMode(GXRModeObj *mode) {
-	switch (VIDEO_GetCurrentTvMode()) {
-		case VI_NTSC:
-			mode = &TVNtsc480IntDf;
-			break;
-		case VI_PAL:
-			mode = &TVPal576IntDfScale;
-			break;
-		case VI_MPAL:
-			mode = &TVMpal480IntDf;
-			break;
-		case VI_EURGB60:
-			mode = &TVEurgb60Hz480IntDf;
-	}
-}
-#endif
-
 int main(int argc, char **argv) {
 	char splash[44], title[83], flavorName[83]/*, doughName[83]*/;
 	bool showControls = false;
@@ -63,10 +42,6 @@ int main(int argc, char **argv) {
 
 	// Initialize the file... thing. I can't really call it the "file system", can I?
 	file_init();
-
-#ifndef HW_RVL
-	GetPreferredMode(rmode);
-#endif
 
 	// Allocate memory for the display in the uncached region
 	cxfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
