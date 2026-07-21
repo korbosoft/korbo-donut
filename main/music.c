@@ -12,30 +12,78 @@
 
 #include "music_it.h"
 
-#define FILETYPE_COUNT 16
+#define FILETYPE_COUNT 62
 
 static bool paused = false;
 static u8 *module;
 
 static const char *moduleTypes[FILETYPE_COUNT] = {
-	[0] = "669",
-	[1] = "amf",
-	// [2] = "apun",
-	[2] = "dsm",
-	[3] = "far",
-	[4] = "gdm",
-	[5] = "imf",
-	[6] = "it",
-	[7] = "med",
-	[8] = "mod",
-	[9] = "mtm",
-	[10] = "okt",
-	[11] = "s3m",
-	[12] = "stm",
-	[13] = "stx",
-	[14] = "ult",
-	// [15] = "uni",
-	[15] = "xm",
+	[0] = "s3m",
+	[1] = "xm",
+	[2] = "it",
+	[3] = "mptm",
+	[4] = "667",
+	[5] = "669",
+	[6] = "amf",
+	[7] = "dmf",
+	[8] = "ams",
+	[9] = "c67",
+	[10] = "cba",
+	[11] = "dbm",
+	[12] = "digi",
+	[13] = "dmf",
+	[14] = "dsm",
+	[15] = "dsym",
+	[16] = "dtm",
+	[17] = "etx",
+	[18] = "far",
+	[19] = "fc",
+	[20] = "fc13",
+	[21] = "fc14",
+	[22] = "smod",
+	[23] = "fmt",
+	[24] = "ftm",
+	[25] = "gdm",
+	[26] = "gmc",
+	[27] = "gtk",
+	[28] = "gt2",
+	[29] = "ice",
+	[30] = "st26",
+	[31] = "imf",
+	[32] = "ims",
+	[33] = "j2b",
+	[34] = "m15",
+	[35] = "stk",
+	[36] = "mdl",
+	[37] = "med",
+#ifdef HW_RVL
+	[38] = "mo3",
+#else
+	[38] = "",
+#endif
+	[39] = "mod",
+	[40] = "mt2",
+	[41] = "mtm",
+	[42] = "mus",
+	[43] = "okt",
+	[44] = "oxm",
+	[45] = "psm",
+	[46] = "plm",
+	[47] = "pt36",
+	[48] = "ptm",
+	[49] = "puma",
+	[50] = "rtm",
+	[51] = "sfx",
+	[52] = "sfx2",
+	[53] = "mms",
+	[54] = "stm",
+	[55] = "stx",
+	[56] = "stp",
+	[57] = "symmod",
+	[58] = "ult",
+	[59] = "umx",
+	[60] = "wow",
+	[61] = "xmf"
 };
 
 static bool is_title_empty(const char *title) {
@@ -51,13 +99,13 @@ static bool is_title_empty(const char *title) {
 }
 
 static bool music_attempt(const char *type) {
-	char tmp[11] = "music.";
+	char tmp[13] = "music.";
 	strcat(tmp, type);
 	return file_exists(tmp);
 }
 
 int music_init(char *title_display) {
-	char tmp[11] = "music.";
+	char tmp[13] = "music.";
 	u8 i;
 
 	for (i = 0; i < FILETYPE_COUNT; i++) {
