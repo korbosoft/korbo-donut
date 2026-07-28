@@ -1,6 +1,6 @@
 .PHONY: clean gba gamecube wii
 
-VERSION	:= 6.1.2
+VERSION	:= 6.1.3
 
 CURDIR = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
@@ -18,11 +18,11 @@ wii:
 clean:
 	@cd $(CURDIR)
 	@rm -rf build-* *.elf *.dol
-	@echo i\'m awesome clean now :\)
+	@echo i\'m awesome clean now. : \)
 
 release:
 	@git diff-files --quiet --ignore-submodules || { echo "ERROR: Unstaged files"; exit 1; }
-	@git fetch && if git status -sb | grep -q "ahead"; then echo "ERROR: Unpushed commits"; exit 1; else echo "everything checks out :)"; fi
+	@git fetch && if git status -sb | grep -q "ahead"; then echo "ERROR: Unpushed commits"; exit 1; else echo "everything checks out : )"; fi
 	@cd $(CURDIR)
 	@echo Cleaning, building
 	$(MAKE) clean
