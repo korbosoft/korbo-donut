@@ -1,8 +1,6 @@
 #ifndef FLAVORS_H
 #define FLAVORS_H
 
-#define FROSTING_FLAVORS 23
-
 enum DonutSpecial {
 	MAPPED,
 	FROSTED,
@@ -27,6 +25,8 @@ typedef struct {
 	enum DonutSpecial special;
 	enum DonutTexture tex;
 } donut_t;
+
+#define FROSTING_FLAVORS 25
 
 static const donut_t flavors[FROSTING_FLAVORS] = {
 	{
@@ -190,10 +190,18 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		METAL
 	},
 	{
+		"Diamond",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{94, 239, 255, 255},
+		REFLECTIVE,
+		METAL
+	},
+	{
 		"Aluminum",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
-		{128, 128, 144, 255},
+		{224, 224, 255, 255},
 		REFLECTIVE,
 		METAL
 	},
@@ -202,6 +210,14 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
+		MAPPED,
+		SPONGE
+	},
+	{
+		"Lovey Sponge",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 128, 128, 255},
 		MAPPED,
 		SPONGE
 	},

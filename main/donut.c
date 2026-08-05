@@ -206,23 +206,18 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 		}
 	}
 
-	if (c_magnitude > 0.0f) {
+	if (c_direction_x)
 		z_rad += c_direction_x * (DONUT_ROTATION_SPEED * (M_PI / 180.0f));
-	}
 
 	if (manual) {
 		Mtx rot_x, rot_y, incremental_rot;
 
-		// ONLY modify the base orientation if there is actual input!
 		if (norm_x != 0.0f || norm_y != 0.0f) {
 			guMtxRotDeg(rot_x, 'X', norm_y * DONUT_ROTATION_SPEED);
 			guMtxRotDeg(rot_y, 'Y', norm_x * DONUT_ROTATION_SPEED);
 
 			guMtxConcat(rot_x, rot_y, incremental_rot);
 			guMtxConcat(base_orientation, incremental_rot, base_orientation);
-		} else {
-			// Optional: Periodically re-normalize base_orientation here if it drift-warps
-			// from heavy use, though stopping the conk-per-frame usually cures it.
 		}
 
 		guMtxCopy(base_orientation, model);

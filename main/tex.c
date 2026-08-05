@@ -143,7 +143,7 @@ void genMunchTex(GRRLIB_texImg *tex, u16 t) {
 
 static GRRLIB_texImg *genTintedMetalTex() {
 	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(metalTex->w, metalTex->h);
-	const f32 min = 48.0f;
+	const f32 min = 72.0f;
 	for (u16 y = 0; y < texOut->h; y++) {
 		for (u16 x = 0; x < texOut->w; x++) {
 			u32 col = GRRLIB_GetPixelFromtexImg(x, y, metalTex);
