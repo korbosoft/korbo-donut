@@ -13,7 +13,7 @@
 #define DONUT_SIDES 64
 #define DONUT_RINGS 32
 
-#define DONUT_AMBIENT LC_DARKER
+#define DONUT_AMBIENT LC_DARK
 #define DONUT_LIGHT LC_WHITE
 
 #define DONUT_ROTATION_SPEED 2.0f
@@ -26,6 +26,6 @@ typedef struct {
 
 extern void donut_init(void);
 extern void donut_free(void);
-extern void render_frame(float A, float B, donut_t flavor, bool renderingType, bool manual);
+extern void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual, bool doSprinkles);
 
 #endif

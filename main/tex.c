@@ -12,7 +12,7 @@
 #include "frosting_png.h"
 #include "metal_png.h"
 #include "sponge_png.h"
-// #include "sprinkles_png.h"
+#include "sprinkles_png.h"
 
 GRRLIB_texImg *whitePixel;
 GRRLIB_texImg *frostingTex;
@@ -22,37 +22,51 @@ GRRLIB_texImg *metalTex;
 GRRLIB_texImg *tintedMetalTex;
 GRRLIB_texImg *spongeTex;
 GRRLIB_texImg *munchTex;
-// GRRLIB_texImg *sprinklesTex;
+GRRLIB_texImg *sprinklesTex;
 
-void set_tex(donut_t flavor) {
+GXTexObj init_tex_obj(GRRLIB_texImg *tex) {
 	GXTexObj texObj;
-	GRRLIB_texImg *tex;
+
+	GX_InitTexObj(&texObj, tex->data, tex->w, tex->h, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	if (GRRLIB_Settings.antialias == false) {
+		GX_InitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
+		GX_SetCopyFilter(GX_FALSE, rmode->sample_pattern, GX_FALSE, rmode->vfilter);
+	} else {
+		GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, GX_TRUE, rmode->vfilter);
+	}
+	return texObj;
+}
+
+void set_tex(donut_t flavor, bool doSprinkles) {
+	GXTexObj mainTexObj;
+	GXTexObj sprinklesTexObj;
+	GRRLIB_texImg *mainTex;
 
 	if (flavor.special == FROSTED) {
-		tex = frostingTex;
+		mainTex = frostingTex;
 	} else {
 		switch (flavor.tex) {
 			case RAINBOW:
-				tex = rainbowTex;
+				mainTex = rainbowTex;
 				break;
 			case PASTEL:
-				tex = pastelTex;
+				mainTex = pastelTex;
 				break;
 			case METAL:
 				if (GXColor2RGBA(flavor.vertex) == 0xFFFFFFFF) {
-					tex = metalTex;
+					mainTex = metalTex;
 				} else {
-					tex = tintedMetalTex;
+					mainTex = tintedMetalTex;
 				}
 				break;
 			case SPONGE:
-				tex = spongeTex;
+				mainTex = spongeTex;
 				break;
 			case MUNCH:
-				tex = munchTex;
+				mainTex = munchTex;
 				break;
 			default:
-				tex = whitePixel;
+				mainTex = whitePixel;
 		}
 	}
 	GX_SetNumTexGens(1);
@@ -62,32 +76,59 @@ void set_tex(donut_t flavor) {
 		GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 	}
 
-	GX_InitTexObj(&texObj, tex->data, tex->w, tex->h, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
-	if (GRRLIB_Settings.antialias == false) {
-		GX_InitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
-		GX_SetCopyFilter(GX_FALSE, rmode->sample_pattern, GX_FALSE, rmode->vfilter);
-	} else {
-		GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, GX_TRUE, rmode->vfilter);
-	}
+	mainTexObj = init_tex_obj(mainTex);
 
-	if (flavor.special == FROSTED) {
-		GX_SetNumTevStages(2);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-		GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-		GX_SetTevColor(GX_TEVREG0, flavor.bottom);
-		GX_SetTevColor(GX_TEVREG1, flavor.top);
+	switch (flavor.special) {
+		case FROSTED:
+			if (doSprinkles) {
+				sprinklesTexObj = init_tex_obj(sprinklesTex);
 
-		GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_C0, GX_CC_C1, GX_CC_TEXC, GX_CC_ZERO);
-		GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-		GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
-		GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
-	} else {
-		GX_SetNumTevStages(1);
-		GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
-		GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
+				GX_SetNumTevStages(3);
+
+				GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+
+				GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+
+				GX_SetTevOrder(GX_TEVSTAGE2, GX_TEXCOORD0, GX_TEXMAP1, GX_COLOR0A0);
+
+				GX_SetTevColor(GX_TEVREG0, flavor.bottom);
+				GX_SetTevColor(GX_TEVREG1, flavor.top);
+
+				GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+
+				GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_C0, GX_CC_C1, GX_CC_TEXC, GX_CC_ZERO);
+				GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+
+				GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_TEXC, GX_CC_TEXA, GX_CC_TEXC);
+				GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+
+				GX_SetTevColorIn(GX_TEVSTAGE2, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
+				GX_SetTevColorOp(GX_TEVSTAGE2, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+			} else {
+				GX_SetNumTevStages(2);
+
+				GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+				GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+
+				GX_SetTevColor(GX_TEVREG0, flavor.bottom);
+				GX_SetTevColor(GX_TEVREG1, flavor.top);
+
+				GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+
+				GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_C0, GX_CC_C1, GX_CC_TEXC, GX_CC_ZERO);
+				GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+
+				GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
+				GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+			}
+			break;
+		default:
+			GX_SetNumTevStages(1);
+			GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+			GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_RASC, GX_CC_TEXC, GX_CC_ZERO);
 	}
-	GX_LoadTexObj(&texObj, GX_TEXMAP0);
+	GX_LoadTexObj(&mainTexObj, GX_TEXMAP0);
+	GX_LoadTexObj(&sprinklesTexObj, GX_TEXMAP1);
 }
 
 
@@ -169,7 +210,7 @@ void tex_init(void) {
 	tintedMetalTex = genTintedMetalTex();
 	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
 	munchTex = GRRLIB_CreateEmptyTexture(128, 128);
-	// sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
+	sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 }
 
 void tex_free(void) {
@@ -181,5 +222,5 @@ void tex_free(void) {
 	GRRLIB_FreeTexture(tintedMetalTex);
 	GRRLIB_FreeTexture(spongeTex);
 	GRRLIB_FreeTexture(munchTex);
-	// GRRLIB_FreeTexture(sprinklesTex);
+	GRRLIB_FreeTexture(sprinklesTex);
 }

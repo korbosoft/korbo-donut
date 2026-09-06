@@ -23,14 +23,15 @@
 // static GXRModeObj *rmode = NULL;
 static void *cxfb = NULL;
 
+static bool doSprinkles = false;
+static bool manual = false;
 static bool paused = true;
 static bool renderingType = false;
-static bool manual = false;
+static bool showControls = false;
 static u8 flavorFlavor = 0;
 
 int main(int argc, char **argv) {
 	char splash[44], title[83], flavorName[83]/*, doughName[83]*/;
-	bool showControls = false;
 	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
 
@@ -115,7 +116,7 @@ int main(int argc, char **argv) {
 		input_scan();
 		input_down(0, 0);
 
-		render_frame(A, B, flavors[flavorFlavor], renderingType, manual);
+		render_frame(A, B, flavors[flavorFlavor], renderingType, manual, doSprinkles);
 
 		if (showControls) {
 			print("\x1b[23H" "\x1b[0;104;97m" STRING_CONTROLS_BOX "\x1b[40m");
@@ -137,10 +138,12 @@ int main(int argc, char **argv) {
 		VIDEO_WaitVSync();
 		if ((wiiPressed & (WPAD_BUTTON_1 | WPAD_CLASSIC_BUTTON_ZL | WPAD_CLASSIC_BUTTON_ZR)) | (GCPressed & PAD_TRIGGER_Z)) {
 			renderingType = !renderingType;
-		} else if ((wiiPressed & (WPAD_BUTTON_2 | WPAD_CLASSIC_BUTTON_B)) | (GCPressed & PAD_BUTTON_B)) {
+		} else if ((wiiPressed & (WPAD_BUTTON_2 | WPAD_CLASSIC_BUTTON_FULL_L)) | (GCPressed & PAD_TRIGGER_L)) {
 			showControls = !showControls;
 		} else if ((wiiPressed & (WPAD_BUTTON_MINUS | WPAD_CLASSIC_BUTTON_X)) | (GCPressed & PAD_BUTTON_X)) {
 			manual = !manual;
+		} else if ((wiiPressed & (WPAD_BUTTON_B | WPAD_CLASSIC_BUTTON_B)) | (GCPressed & PAD_BUTTON_B)) {
+			doSprinkles = !doSprinkles;
 		} else if ((wiiPressed & (WPAD_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_Y)) | (GCPressed & PAD_BUTTON_Y)) {
 			flavorFlavor++;
 			flavorFlavor %= FROSTING_FLAVORS;

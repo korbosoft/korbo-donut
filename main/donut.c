@@ -136,7 +136,7 @@ void donut_free(void) {
 	tex_free();
 }
 
-void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual) {
+void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual, bool doSprinkles) {
 	static Mtx base_orientation = {
 		{1.0f, 0.0f, 0.0f, 0.0f},
 		{0.0f, 1.0f, 0.0f, 0.0f},
@@ -251,7 +251,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 	guMtxTransApply(normal, normal, 0.5f, 0.5f, 1.0f);
 	GX_LoadTexMtxImm(normal, GX_TEXMTX0, GX_MTX3x4);
 
-	set_tex(flavors[0]);
+	set_tex(flavors[0], false);
 
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKDARKDARK);
@@ -277,7 +277,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual)
 	GX_SetViewport(0,0, DONUT_WIDTH, DONUT_HEIGHT, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH, DONUT_HEIGHT);
 
-	set_tex(flavor);
+	set_tex(flavor, doSprinkles);
 
 	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, vertex}, true);
 
