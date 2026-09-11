@@ -176,7 +176,7 @@ $(foreach i,$(shell seq 2 $(words $(PNG_OFILES))),$(eval $(call png-sequence-rul
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 # 	currently breaks GRRLIB again, gotta find out why
-# 	@$(call png-optimize,$<)
+	@$(call png-optimize,$<)
 	@$(bin2o)
 
 -include $(DEPSDIR)/*.d

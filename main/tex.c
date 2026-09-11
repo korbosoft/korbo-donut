@@ -24,6 +24,8 @@ GRRLIB_texImg *spongeTex;
 GRRLIB_texImg *munchTex;
 GRRLIB_texImg *sprinklesTex;
 
+GXTexObj sprinklesTexObj;
+
 GXTexObj init_tex_obj(GRRLIB_texImg *tex) {
 	GXTexObj texObj;
 
@@ -39,7 +41,6 @@ GXTexObj init_tex_obj(GRRLIB_texImg *tex) {
 
 void set_tex(donut_t flavor, bool doSprinkles) {
 	GXTexObj mainTexObj;
-	GXTexObj sprinklesTexObj;
 	GRRLIB_texImg *mainTex;
 
 	if (flavor.special == FROSTED) {
@@ -77,11 +78,11 @@ void set_tex(donut_t flavor, bool doSprinkles) {
 	}
 
 	mainTexObj = init_tex_obj(mainTex);
+	sprinklesTexObj = init_tex_obj(sprinklesTex);
 
 	switch (flavor.special) {
 		case FROSTED:
 			if (doSprinkles) {
-				sprinklesTexObj = init_tex_obj(sprinklesTex);
 
 				GX_SetNumTevStages(3);
 
@@ -94,13 +95,10 @@ void set_tex(donut_t flavor, bool doSprinkles) {
 				GX_SetTevColor(GX_TEVREG0, flavor.bottom);
 				GX_SetTevColor(GX_TEVREG1, flavor.top);
 
-				GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
-
 				GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_C0, GX_CC_C1, GX_CC_TEXC, GX_CC_ZERO);
 				GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
 
-				GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_CPREV, GX_CC_TEXC, GX_CC_TEXA, GX_CC_TEXC);
-				GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
+				GX_SetTevOp(GX_TEVSTAGE1, GX_DECAL);
 
 				GX_SetTevColorIn(GX_TEVSTAGE2, GX_CC_ZERO, GX_CC_RASC, GX_CC_CPREV, GX_CC_ZERO);
 				GX_SetTevColorOp(GX_TEVSTAGE2, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_ENABLE, GX_TEVPREV);
