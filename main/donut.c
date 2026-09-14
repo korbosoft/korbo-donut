@@ -16,7 +16,6 @@
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
 
-static u16 munch_timer;
 static u16 rainbow_timer;
 
 typedef struct {
@@ -268,9 +267,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual,
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, DONUT_LIGHT);
 
-	munch_timer = (munch_timer + 1) % (256*6);
 	rainbow_timer = (rainbow_timer + 1) % 48;
-	genMunchTex(munchTex, munch_timer);
 	genRainbowTex(rainbowTex, rainbow_timer, false);
 	genRainbowTex(pastelTex, rainbow_timer, true);
 

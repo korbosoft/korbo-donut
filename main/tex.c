@@ -21,7 +21,7 @@ GRRLIB_texImg *pastelTex;
 GRRLIB_texImg *metalTex;
 GRRLIB_texImg *tintedMetalTex;
 GRRLIB_texImg *spongeTex;
-GRRLIB_texImg *munchTex;
+GRRLIB_texImg *holoTex;
 GRRLIB_texImg *sprinklesTex;
 
 GXTexObj sprinklesTexObj;
@@ -64,7 +64,7 @@ void set_tex(donut_t flavor, bool doSprinkles) {
 				mainTex = spongeTex;
 				break;
 			case MUNCH:
-				mainTex = munchTex;
+				mainTex = holoTex;
 				break;
 			default:
 				mainTex = whitePixel;
@@ -129,7 +129,6 @@ void set_tex(donut_t flavor, bool doSprinkles) {
 	GX_LoadTexObj(&sprinklesTexObj, GX_TEXMAP1);
 }
 
-
 void genRainbowTex(GRRLIB_texImg *tex, u16 t, bool pastel) {
 	const u16 width = tex->w;
 	const u16 height = tex->h;
@@ -166,25 +165,49 @@ void genRainbowTex(GRRLIB_texImg *tex, u16 t, bool pastel) {
 	}
 }
 
-void genMunchTex(GRRLIB_texImg *tex, u16 t) {
-	const u8 time_1 = t;
-	const u8 time_2 = t/2;
-	const u8 time_3 = t/3;
-	for (u16 y = 0; y < tex->h; y++) {
-		for (u16 x = 0; x < tex->w; x++) {
-			u8 r = x ^ (y - time_1);
-			u8 g = (x ^ y) + time_2;
-			u8 b = x ^ (y + time_3);
-			GRRLIB_SetPixelTotexImg(x, y, tex, RGBA(r, g, b, 255));
+static GRRLIB_texImg *genHoloTex(u16 w, u16 h) {
+	const f32 twoThirdsPi = (2.0f / 3.0f) * M_PI;
+
+	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(w, h);
+
+	for (u16 y = 0; y < h; y++) {
+		f32 latitude = ((f32)y / (f32)h - 0.5f) * M_PI;
+		f32 cosLat = cosf(latitude);
+
+		for (u16 x = 0; x < w; x++) {
+			f32 longitude = ((f32)x / (f32)w - 0.5f) * (2.0f * M_PI);
+
+			f32 dirX = cosLat * cosf(longitude);
+			f32 dirZ = cosLat * sinf(longitude);
+
+			f32 fresnel = powf(1.0f - fabsf(dirZ), 3.0f);
+
+			u8 munch = (u8)((x ^ y) * 3 / 4) + 64;
+
+			f32 basePhase = atan2f(dirZ, dirX) * 3.0f;
+
+			f32 holoR = 0.5f + 0.5f * cosf(basePhase);
+			f32 holoG = 0.5f + 0.5f * cosf(basePhase - twoThirdsPi);
+			f32 holoB = 0.5f + 0.5f * cosf(basePhase - (twoThirdsPi * 2.0f));
+
+			u8 r = (u8)(munch * holoR + fresnel);
+			u8 g = (u8)(munch * holoG + fresnel);
+			u8 b = (u8)(munch * holoB + fresnel);
+
+			GRRLIB_SetPixelTotexImg(x, y, texOut, RGBA(r, g, b, 255));
 		}
 	}
+	return texOut;
 }
 
 static GRRLIB_texImg *genTintedMetalTex() {
-	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(metalTex->w, metalTex->h);
+	u16 width = metalTex->w;
+	u16 height = metalTex->h;
+
+	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(width, height);
 	const f32 min = 72.0f;
-	for (u16 y = 0; y < texOut->h; y++) {
-		for (u16 x = 0; x < texOut->w; x++) {
+	for (u16 y = 0; y < height; y++) {
+		for (u16 x = 0; x < width; x++) {
 			u32 col = GRRLIB_GetPixelFromtexImg(x, y, metalTex);
 			u8 r = R(col);
 			u8 g = G(col);
@@ -207,7 +230,7 @@ void tex_init(void) {
 	metalTex = GRRLIB_LoadTexturePNG(metal_png);
 	tintedMetalTex = genTintedMetalTex();
 	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
-	munchTex = GRRLIB_CreateEmptyTexture(128, 128);
+	holoTex = genHoloTex(256, 256);
 	sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 }
 
@@ -219,6 +242,6 @@ void tex_free(void) {
 	GRRLIB_FreeTexture(metalTex);
 	GRRLIB_FreeTexture(tintedMetalTex);
 	GRRLIB_FreeTexture(spongeTex);
-	GRRLIB_FreeTexture(munchTex);
+	GRRLIB_FreeTexture(holoTex);
 	GRRLIB_FreeTexture(sprinklesTex);
 }
