@@ -21,7 +21,7 @@ const char* menu_main[] = {
 	"Exit"
 };
 
-const char* greetz_main[] = {
+const char* menu_greetz[] = {
 	"WiiLink",
 	"/r/Ooer",
 	"Timcord"
@@ -80,6 +80,25 @@ void render_menu_info(char *splash) {
 	}
 	GOTOXY(54, 27);
 	print(STRING_CONTROLS);
+	RESET_COLOR();
+}
+
+void render_menu_main(u8 selected_index) {
+
+	draw_tui_window(0, 23, 78, 6, "Korbo's Donut Shop v"VERSION" :3");
+	GOTOXY(34, 24);
+	COLOR_SPLASH();
+	print(splash);
+	COLOR_TEXT();
+	for(u8 i = 0; i < INFO_ITEMS; i++) {
+		GOTOXY(3, 25 + i);
+		print(menu_info[i]);
+	}
+	GOTOXY(54, 27);
+	print(STRING_CONTROLS);
+	RESET_COLOR();
+
+	COLOR_MENU_BOX();
 	RESET_COLOR();
 }
 
