@@ -32,24 +32,9 @@
 // honorable mention greet: sudomemo, didn't have enough space for it sadly
 
 #ifdef HW_RVL
-#define STRING_CONTROLS "Press 2/L for controls."
-
-#define STRING_CONTROLS_BOX \
-"╔════════════════════╦═══════════════════════════╦═══════════════════════════╗" \
-"║ -/X - Manual mode  ║ 1/Z     - Rendering style ║                  \x1b[4mControls\x1b[0;104;97m ║" \
-"║ +/Y - Donut flavor ║ \xfd/START - Exit            ║ Sticks rotate donut when  ║" \
-"║ A   - Toggle music ║ RESET   - I think you can ║ in manual mode.           ║" \
-"║ B   - Frosting     ║ figure this one out xD    ║     Press 2/L to go back. ║" \
-"╚════════════════════╩═══════════════════════════╩═══════════════════════════╝"
+#define STRING_CONTROLS "Press +/START for menu."
 #else
-#define STRING_CONTROLS "  Press L for controls."
-#define STRING_CONTROLS_BOX \
-"╔════════════════════╦═══════════════════════════╦═══════════════════════════╗" \
-"║ X   - Manual mode  ║ Z       - Rendering style ║                  \x1b[4mControls\x1b[0;104;97m ║" \
-"║ Y   - Donut flavor ║ START   - Exit            ║ Sticks rotate donut when  ║" \
-"║ A   - Toggle music ║ RESET   - I think you can ║ in manual mode.           ║" \
-"║ B   - Frosting     ║ figure this one out xD    ║       Press L to go back. ║" \
-"╚════════════════════╩═══════════════════════════╩═══════════════════════════╝"
+#define STRING_CONTROLS "  Press START for menu."
 #endif
 
 #endif

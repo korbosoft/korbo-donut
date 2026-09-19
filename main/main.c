@@ -17,6 +17,7 @@
 #include "text.h"
 #include "flavors.h"
 #include "music.h"
+#include "tui.h"
 
 #define DEFAULT_FIFO_SIZE	(256*1024)
 
@@ -118,14 +119,7 @@ int main(int argc, char **argv) {
 
 		render_frame(A, B, flavors[flavorFlavor], renderingType, manual, doSprinkles);
 
-		if (showControls) {
-			print("\x1b[23H" "\x1b[0;104;97m" STRING_CONTROLS_BOX "\x1b[40m");
-			// } else if (showFrosting) {
-
-		} else {
-			printf("\x1b[23H" "\x1b[0;104;97m" STRING_MAIN_BOX "\x1b[40m", splash);
-			// printf("cwd: %s\n", getcwd(NULL, 0));
-		}
+		render_menu_info(splash);
 
 		if (showFrosting)
 			showFrosting--;
@@ -152,7 +146,7 @@ int main(int argc, char **argv) {
 		} else if ((wiiPressed & (WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A)) | (GCPressed & PAD_BUTTON_A)) {
 			music_pause(paused);
 			paused = !paused;
-		} else if ((wiiPressed & (WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME) ) || (GCPressed & PAD_BUTTON_START))
+		} else if (wiiPressed & (WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME))
 			break;
 
 		A += 0.035f;
