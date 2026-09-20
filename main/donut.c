@@ -253,7 +253,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual,
 	set_tex(flavors[0], false);
 
 	if (renderingType)
-		GX_SetChanAmbColor(GX_COLOR0A0, LC_DARKDARKDARK);
+		GX_SetChanAmbColor(GX_COLOR0A0, DONUT_CLASSIC_AMBIENT);
 
 	u32 vertex = RGBA(flavor.vertex.r, flavor.vertex.g, flavor.vertex.b, flavor.vertex.a);
 

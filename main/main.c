@@ -29,11 +29,19 @@ static bool manual = false;
 static bool paused = true;
 static bool renderingType = false;
 static bool showControls = false;
+static bool stop = false;
 static u8 flavor = 0;
+static s16 selectedIndex = 0;
 static Menu currentMenu = NOMENU;
 
+void handle_menu_buttons() {
+	if (((wiiPressed & (WPAD_BUTTON_UP | WPAD_CLASSIC_BUTTON_UP))) | (GCPressed & PAD_BUTTON_UP)) {
+		if (selectedIndex) selectedIndex--;
+	}
+}
+
 int main(int argc, char **argv) {
-	char splash[44], title[83], flavorName[83]/*, doughName[83]*/;
+	char splash[44], title[83], flavorName[83];
 	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
 
@@ -77,7 +85,7 @@ int main(int argc, char **argv) {
 
 	float A = 1, B = 1;
 
-	#define SPLASH_COUNT 12
+	#define SPLASH_COUNT 13
 
 	const char *splashMessages[SPLASH_COUNT] = {
 		[0] = "Also try DS Donut!",
@@ -92,6 +100,7 @@ int main(int argc, char **argv) {
 		[9] = "You best not forget the spongebob incident.",
 		[10] = "so there's this series called HLVRAI and it",
 		[11] = "You love Shit River.",
+		[12] = "The most overengineered Wii/GC homebrew!"
 	};
 
 	if (rand() % 50) {
@@ -103,7 +112,7 @@ int main(int argc, char **argv) {
 	GX_SetCullMode(GX_CULL_FRONT);
 	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
-	u8 showFrosting = 0;
+	u8 showFlavor = 0;
 	while(SYS_MainLoop()) {
 		GX_SetNumChans(1);
 		guVecMultiply(view, &lpos, &lpos);
@@ -122,27 +131,29 @@ int main(int argc, char **argv) {
 
 		render_menu_info(splash);
 
-
-		if (showFrosting)
-			showFrosting--;
+		if (showFlavor)
+			showFlavor--;
 
 		print("\x1b[H");
-		print(showFrosting ? flavorName : title);
+		print(showFlavor ? flavorName : title);
 		print("\x1b[0;0;0m");
+
+		if (currentMenu == NOMENU) {
+			if (wiiPressed & (WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME)) {
+				stop = true;
+			} else if (((wiiPressed & (WPAD_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_PLUS))) | (GCPressed & PAD_BUTTON_START)) {
+				currentMenu = MAIN;
+				selectedIndex = 0;
+			}
+		} else {
+			render_menu(currentMenu, selectedIndex);
+			handle_menu_buttons();
+		}
+
+		if (stop) break;
 
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
-		if (currentMenu == NOMENU) {
-			if (wiiPressed & (WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME)) {
-				break;
-			} else if (((wiiPressed & (WPAD_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_PLUS))) | (GCPressed & PAD_BUTTON_START)) {
-				currentMenu = MAIN;
-			}
-		} else {
-			switch (currentMenu) {
-
-			}
-		}
 
 		A += 0.035f;
 		B += 0.01f;
