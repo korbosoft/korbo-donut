@@ -24,7 +24,7 @@ MenuSetting menuSettings[MENU_COUNT] = {
 };
 
 void handle_menu_specific_buttons(Menu *currentMenu, u8 *selected) {
-	switch (currentMenu) {
+	switch (*currentMenu) {
 		case NOMENU:
 		case MAIN:
 		case GREETZ:
