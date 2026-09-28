@@ -37,6 +37,7 @@ static bool stop = false;
 static u8 flavor = 0;
 static u8 selected = 0;
 static Menu currentMenu = NOMENU;
+static bool ooer = false;
 
 int main(int argc, char **argv) {
 	char splash[44], title[83], flavorName[83];
@@ -136,16 +137,21 @@ int main(int argc, char **argv) {
 		print(showFlavor ? flavorName : title);
 		print("\x1b[0;0;0m");
 
+		if (ooer) {
+			format_splash(splashMessages[4], splash);
+			ooer = !ooer;
+		}
+
 		if (currentMenu == NOMENU) {
 			if (BUTTON_EXIT) {
 				stop = true;
 			} else if (BUTTON_START) {
 				currentMenu = MAIN;
-				selected = 0;
+				selected = 4;
 			}
 		} else {
-			handle_general_menu_buttons(&currentMenu, &selected);
 			render_menu(currentMenu, selected);
+			ooer = handle_general_menu_buttons(&currentMenu, &selected);
 		}
 
 		if (stop) break;

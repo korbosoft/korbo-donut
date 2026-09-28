@@ -17,21 +17,69 @@
 #define COLOR_TITLE()		print("\x1b[4;97;104m")
 #define COLOR_SPLASH()		print("\x1b[0;93;104m")
 
+static bool ooer = false;
+
 MenuSetting menuSettings[MENU_COUNT] = {
 	{0, 0, NOMENU}, // NOMENU (here for spacing)
-	{4, 1, NOMENU}, // MAIN
-	{5, 5, GREETZ}, // GREETZ
+	{5, 4, NOMENU}, // MAIN
+	{5, 5, MAIN}, // GREETZ
 };
 
-void handle_menu_specific_buttons(Menu *currentMenu, u8 *selected) {
-	switch (*currentMenu) {
-		case NOMENU:
-		case MAIN:
-		case GREETZ:
+typedef void (*MenuActionFn)(Menu *currentMenu, u8 *selected);
+
+void main_controls(Menu *currentMenu, u8 *selected) {
+	return;
+}
+
+void main_options(Menu *currentMenu, u8 *selected) {
+	return;
+}
+
+void main_greetz(Menu *currentMenu, u8 *selected) {
+	*currentMenu = GREETZ;
+	*selected = 5;
+}
+
+void main_exit(Menu *currentMenu, u8 *selected) {
+	return;
+}
+
+void greetz_ooer(Menu *currentMenu, u8 *selected) {
+	ooer = true;
+}
+
+void common_back(Menu *currentMenu, u8 *selected) {
+	*currentMenu = menuSettings[*currentMenu].prevMenu;
+	*selected = menuSettings[*currentMenu].defaultItem;
+}
+
+static const MenuActionFn menu_actions[MENU_COUNT][ITEMS_MAX] = {
+	[MAIN] = {
+		main_controls,
+		main_options,
+		main_greetz,
+		common_back,
+		main_exit
+	},
+	[GREETZ] = {
+		NULL,
+		greetz_ooer,
+		NULL,
+		NULL,
+		common_back
+	},
+};
+
+static void handle_menu_specific_buttons(Menu *currentMenu, u8 *selected) {
+	if (*currentMenu < MENU_COUNT && *selected < ITEMS_MAX) {
+		MenuActionFn action = menu_actions[*currentMenu][*selected - 1];
+		if (action != NULL) {
+			action(currentMenu, selected);
+		}
 	}
 }
 
-void handle_general_menu_buttons(Menu *currentMenu, u8 *selected) {
+bool handle_general_menu_buttons(Menu *currentMenu, u8 *selected) {
 	u8 itemCount = menuSettings[*currentMenu].itemCount;
 
 	if (BUTTON_UP) {
@@ -48,9 +96,15 @@ void handle_general_menu_buttons(Menu *currentMenu, u8 *selected) {
 		}
 	} else if (BUTTON_A) {
 		handle_menu_specific_buttons(currentMenu, selected);
+		if (ooer) {
+			ooer = false;
+			return true;
+		}
+
 	} else if (BUTTON_B) {
-		*currentMenu = menuSettings[*currentMenu].prevMenu;
+		common_back(currentMenu, selected);
 	}
+	return false;
 }
 
 inline void gotoxy(u8 x, u8 y) {
@@ -69,6 +123,7 @@ static char *menu_main[] = {
 	"Controls",
 	"Options",
 	"Greetings",
+	"Back",
 	"Exit"
 };
 
@@ -136,23 +191,22 @@ void render_menu(Menu menuType, u8 selected) {
 			height = 8;
 			strcpy(title, "Placeholder");
 			items = menu_main;
-			itemCount = 4;
 			break;
 		case MAIN:
 			width = 14;
 			height = 8;
 			strcpy(title, "Main Menu");
 			items = menu_main;
-			itemCount = 4;
 			break;
 		case GREETZ:
-			width = 16;
+			width = 20;
 			height = 10;
 			strcpy(title, "Greetings To...");
 			items = menu_greetz;
-			itemCount = 5;
 			break;
 	}
+
+	itemCount = menuSettings[menuType].itemCount;
 
 	startX = (78 - width) / 2;
 	startY = (28 - height) / 2;
