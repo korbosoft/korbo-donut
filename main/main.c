@@ -3,7 +3,11 @@
 #include <malloc.h>
 #include <unistd.h>
 #include <gccore.h>
+
+#ifdef HW_RVL
 #include <wiiuse/wpad.h>
+#endif
+
 #include <aesndlib.h>
 #include <gcmodplay.h>
 #include <grrlib.h>
@@ -17,6 +21,7 @@
 #include "text.h"
 #include "flavors.h"
 #include "music.h"
+#include "tui.h"
 
 #define DEFAULT_FIFO_SIZE	(256*1024)
 
@@ -28,10 +33,14 @@ static bool manual = false;
 static bool paused = true;
 static bool renderingType = false;
 static bool showControls = false;
-static u8 flavorFlavor = 0;
+static bool stop = false;
+static u8 flavor = 0;
+static u8 selected = 0;
+static Menu currentMenu = NOMENU;
+static bool ooer = false;
 
 int main(int argc, char **argv) {
-	char splash[44], title[83], flavorName[83]/*, doughName[83]*/;
+	char splash[44], title[83], flavorName[83];
 	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
 
@@ -75,7 +84,7 @@ int main(int argc, char **argv) {
 
 	float A = 1, B = 1;
 
-	#define SPLASH_COUNT 12
+	#define SPLASH_COUNT 13
 
 	const char *splashMessages[SPLASH_COUNT] = {
 		[0] = "Also try DS Donut!",
@@ -90,6 +99,7 @@ int main(int argc, char **argv) {
 		[9] = "You best not forget the spongebob incident.",
 		[10] = "so there's this series called HLVRAI and it",
 		[11] = "You love Shit River.",
+		[12] = "The most overengineered Wii/GC homebrew!"
 	};
 
 	if (rand() % 50) {
@@ -101,7 +111,7 @@ int main(int argc, char **argv) {
 	GX_SetCullMode(GX_CULL_FRONT);
 	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
-	u8 showFrosting = 0;
+	u8 showFlavor = 0;
 	while(SYS_MainLoop()) {
 		GX_SetNumChans(1);
 		guVecMultiply(view, &lpos, &lpos);
@@ -116,44 +126,38 @@ int main(int argc, char **argv) {
 		input_scan();
 		input_down(0, 0);
 
-		render_frame(A, B, flavors[flavorFlavor], renderingType, manual, doSprinkles);
+		render_frame(A, B, flavors[flavor], renderingType, manual, doSprinkles);
 
-		if (showControls) {
-			print("\x1b[23H" "\x1b[0;104;97m" STRING_CONTROLS_BOX "\x1b[40m");
-			// } else if (showFrosting) {
+		render_menu_info(splash);
 
-		} else {
-			printf("\x1b[23H" "\x1b[0;104;97m" STRING_MAIN_BOX "\x1b[40m", splash);
-			// printf("cwd: %s\n", getcwd(NULL, 0));
-		}
-
-		if (showFrosting)
-			showFrosting--;
+		if (showFlavor)
+			showFlavor--;
 
 		print("\x1b[H");
-		print(showFrosting ? flavorName : title);
+		print(showFlavor ? flavorName : title);
 		print("\x1b[0;0;0m");
+
+		if (ooer) {
+			format_splash(splashMessages[4], splash);
+			ooer = !ooer;
+		}
+
+		if (currentMenu == NOMENU) {
+			if (BUTTON_EXIT) {
+				stop = true;
+			} else if (BUTTON_START) {
+				currentMenu = MAIN;
+				selected = 4;
+			}
+		} else {
+			render_menu(currentMenu, selected);
+			ooer = handle_general_menu_buttons(&currentMenu, &selected);
+		}
+
+		if (stop) break;
 
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
-		if ((wiiPressed & (WPAD_BUTTON_1 | WPAD_CLASSIC_BUTTON_ZL | WPAD_CLASSIC_BUTTON_ZR)) | (GCPressed & PAD_TRIGGER_Z)) {
-			renderingType = !renderingType;
-		} else if ((wiiPressed & (WPAD_BUTTON_2 | WPAD_CLASSIC_BUTTON_FULL_L)) | (GCPressed & PAD_TRIGGER_L)) {
-			showControls = !showControls;
-		} else if ((wiiPressed & (WPAD_BUTTON_MINUS | WPAD_CLASSIC_BUTTON_X)) | (GCPressed & PAD_BUTTON_X)) {
-			manual = !manual;
-		} else if ((wiiPressed & (WPAD_BUTTON_B | WPAD_CLASSIC_BUTTON_B)) | (GCPressed & PAD_BUTTON_B)) {
-			doSprinkles = !doSprinkles;
-		} else if ((wiiPressed & (WPAD_BUTTON_PLUS | WPAD_CLASSIC_BUTTON_Y)) | (GCPressed & PAD_BUTTON_Y)) {
-			flavorFlavor++;
-			flavorFlavor %= FROSTING_FLAVORS;
-			format_info("Flavor: ", flavors[flavorFlavor].name, flavorName, true);
-			showFrosting = 100;
-		} else if ((wiiPressed & (WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A)) | (GCPressed & PAD_BUTTON_A)) {
-			music_pause(paused);
-			paused = !paused;
-		} else if ((wiiPressed & (WPAD_BUTTON_HOME | WPAD_CLASSIC_BUTTON_HOME) ) || (GCPressed & PAD_BUTTON_START))
-			break;
 
 		A += 0.035f;
 		B += 0.01f;
