@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 				stop = true;
 			} else if (BUTTON_START) {
 				currentMenu = MAIN;
-				selected = 4;
+				selected = menuSettings[MAIN].defaultItem;
 			}
 		} else {
 			render_menu(currentMenu, selected);

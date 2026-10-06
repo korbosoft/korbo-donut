@@ -18,48 +18,67 @@
 #define COLOR_SPLASH()		print("\x1b[0;93;104m")
 
 static bool ooer = false;
+static u8 prevSelected = 0;
 
 MenuSetting menuSettings[MENU_COUNT] = {
 	{0, 0, NOMENU}, // NOMENU (here for spacing)
-	{5, 4, NOMENU}, // MAIN
+	{4, 3, NOMENU}, // MAIN
+	{5, 5, MAIN}, // OPTIONS
 	{5, 5, MAIN}, // GREETZ
 };
 
 typedef void (*MenuActionFn)(Menu *currentMenu, u8 *selected);
 
-void main_controls(Menu *currentMenu, u8 *selected) {
-	return;
+static void select_default(u8 currentMenu, u8 *selected) {
+	prevSelected = *selected;
+	*selected = menuSettings[currentMenu].defaultItem;
 }
 
-void main_options(Menu *currentMenu, u8 *selected) {
-	return;
+static void restore_selection(u8 *selected) {
+	*selected = prevSelected;
 }
 
-void main_greetz(Menu *currentMenu, u8 *selected) {
+static void main_options(Menu *currentMenu, u8 *selected) {
+	*currentMenu = OPTIONS;
+	select_default(*currentMenu, selected);
+}
+
+static void main_greetz(Menu *currentMenu, u8 *selected) {
 	*currentMenu = GREETZ;
-	*selected = 5;
+	select_default(*currentMenu, selected);
 }
 
-void main_exit(Menu *currentMenu, u8 *selected) {
+static void main_exit(Menu *currentMenu, u8 *selected) {
 	return;
 }
 
-void greetz_ooer(Menu *currentMenu, u8 *selected) {
+static void greetz_ooer(Menu *currentMenu, u8 *selected) {
 	ooer = true;
 }
 
-void common_back(Menu *currentMenu, u8 *selected) {
-	*currentMenu = menuSettings[*currentMenu].prevMenu;
-	*selected = menuSettings[*currentMenu].defaultItem;
+static void common_back(Menu *currentMenu, u8 *selected) {
+	Menu prevMenu = menuSettings[*currentMenu].prevMenu;
+	if (prevMenu != NOMENU) {
+		restore_selection(selected);
+	} else {
+		*selected = menuSettings[prevMenu].defaultItem;
+	}
+	*currentMenu = prevMenu;
 }
 
 static const MenuActionFn menu_actions[MENU_COUNT][ITEMS_MAX] = {
 	[MAIN] = {
-		main_controls,
 		main_options,
 		main_greetz,
 		common_back,
 		main_exit
+	},
+	[OPTIONS] = {
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL
 	},
 	[GREETZ] = {
 		NULL,
@@ -71,7 +90,7 @@ static const MenuActionFn menu_actions[MENU_COUNT][ITEMS_MAX] = {
 };
 
 static void handle_menu_specific_buttons(Menu *currentMenu, u8 *selected) {
-	if (*currentMenu < MENU_COUNT && *selected < ITEMS_MAX) {
+	if (*currentMenu < MENU_COUNT && *selected - 1 < ITEMS_MAX) {
 		MenuActionFn action = menu_actions[*currentMenu][*selected - 1];
 		if (action != NULL) {
 			action(currentMenu, selected);
@@ -120,7 +139,6 @@ static char *menu_greetz[] = {
 };
 
 static char *menu_main[] = {
-	"Controls",
 	"Options",
 	"Greetings",
 	"Back",
@@ -133,7 +151,7 @@ static char *menu_info[] = {
 	"Press A for manual mode (controlled by sticks)"
 };
 
-void draw_tui_window(u8 startX, u8 startY, u8 width, u8 height, const char* title) {
+static void draw_tui_window(u8 startX, u8 startY, u8 width, u8 height, const char* title) {
 	COLOR_MENU_BOX();
 
 	gotoxy(startX, startY);
@@ -187,10 +205,10 @@ void render_menu(Menu menuType, u8 selected) {
 
 	switch (menuType) {
 		default:
-			width = 12;
+			width = 16;
 			height = 8;
 			strcpy(title, "Placeholder");
-			items = menu_main;
+			items = menu_greetz;
 			break;
 		case MAIN:
 			width = 14;
