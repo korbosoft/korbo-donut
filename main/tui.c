@@ -17,10 +17,10 @@
 #define COLOR_TITLE()		print("\x1b[4;97;104m")
 #define COLOR_SPLASH()		print("\x1b[0;93;104m")
 
-static bool ooer = false;
+static menu_result_t ret;
 static u8 prevSelected = 0;
 
-MenuSetting menuSettings[MENU_COUNT] = {
+menu_settings_t menuSettings[MENU_COUNT] = {
 	{0, 0, NOMENU}, // NOMENU (here for spacing)
 	{4, 3, NOMENU}, // MAIN
 	{5, 5, MAIN}, // OPTIONS
@@ -49,11 +49,11 @@ static void main_greetz(Menu *currentMenu, u8 *selected) {
 }
 
 static void main_exit(Menu *currentMenu, u8 *selected) {
-	return;
+	ret.exit = true;
 }
 
 static void greetz_ooer(Menu *currentMenu, u8 *selected) {
-	ooer = true;
+	ret.ooer = true;
 }
 
 static void common_back(Menu *currentMenu, u8 *selected) {
@@ -98,8 +98,11 @@ static void handle_menu_specific_buttons(Menu *currentMenu, u8 *selected) {
 	}
 }
 
-bool handle_general_menu_buttons(Menu *currentMenu, u8 *selected) {
+menu_result_t handle_general_menu_buttons(Menu *currentMenu, u8 *selected) {
 	u8 itemCount = menuSettings[*currentMenu].itemCount;
+
+	ret.ooer = false;
+	ret.exit = false;
 
 	if (BUTTON_UP) {
 		if (*selected > 1) {
@@ -108,22 +111,18 @@ bool handle_general_menu_buttons(Menu *currentMenu, u8 *selected) {
 			*selected = itemCount;
 		}
 	} else if (BUTTON_DOWN) {
-		if (*selected >= 1 && *selected < itemCount) {
+		if (*selected < itemCount) {
 			(*selected)++;
 		} else {
 			*selected = 1;
 		}
 	} else if (BUTTON_A) {
 		handle_menu_specific_buttons(currentMenu, selected);
-		if (ooer) {
-			ooer = false;
-			return true;
-		}
 
 	} else if (BUTTON_B) {
 		common_back(currentMenu, selected);
 	}
-	return false;
+	return ret;
 }
 
 inline void gotoxy(u8 x, u8 y) {
@@ -197,7 +196,7 @@ void render_menu_info(char *splash) {
 	RESET_COLOR();
 }
 
-void render_menu(Menu menuType, u8 selected) {
+void render_general_menu(Menu menuType, u8 selected) {
 	u8 startX, startY, width, height;
 	u8 itemCount;
 	char **items;
@@ -239,4 +238,27 @@ void render_menu(Menu menuType, u8 selected) {
 		print(items[i]);
 	}
 	RESET_COLOR();
+}
+
+void render_options_menu(u8 selected) {
+	// u8 startX, startY, width, height;
+	// u8 itemCount;
+	// char **items;
+	// char title[77];
+ //
+	// itemCount = menuSettings[menuType].itemCount;
+ //
+	// startX = (78 - width) / 2;
+	// startY = (28 - height) / 2;
+	// draw_tui_window(startX, startY, width, height, title);
+	// for (u8 i = 0; i < itemCount; i++) {
+	// 	if (i == selected - 1) {
+	// 		COLOR_SELECTED();
+	// 	} else {
+	// 		COLOR_TEXT();
+	// 	}
+	// 	gotoxy(startX + 2, startY + 2 + i);
+	// 	print(items[i]);
+	// }
+	// RESET_COLOR();
 }

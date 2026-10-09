@@ -26,15 +26,15 @@ typedef struct {
 	f32 pos1[3];
 	f32 nrm1[3];
 	f32 tex1[2];
-} DonutModel;
+} donut_model_t;
 
-static DonutOptions donutOptions;
-static DonutModel donutModel[DONUT_RINGS][DONUT_SIDES + 1];
+static donut_model_options_t donutOptions;
+static donut_model_t donutModel[DONUT_RINGS][DONUT_SIDES + 1];
 
-static void draw_donut(DonutOptions options, bool filled) {
-	if ((donutOptions.major != options.major) ||
-		(donutOptions.minor != options.minor) ||
-		(donutOptions.col != options.col)) {
+static void draw_donut(donut_model_options_t newDonutOptions, bool filled) {
+	if ((donutOptions.major != newDonutOptions.major) ||
+		(donutOptions.minor != newDonutOptions.minor) ||
+		(donutOptions.col != newDonutOptions.col)) {
 		const f32 ringDelta = 2.0 * M_PI / DONUT_RINGS;
 		const f32 sideDelta = 2.0 * M_PI / DONUT_SIDES;
 
@@ -42,9 +42,9 @@ static void draw_donut(DonutOptions options, bool filled) {
 		f32 cosTheta = 1.0f;
 		f32 sinTheta = 0.0f;
 
-		donutOptions.major = options.major;
-		donutOptions.minor = options.minor;
-		donutOptions.col = options.col;
+		donutOptions.major = newDonutOptions.major;
+		donutOptions.minor = newDonutOptions.minor;
+		donutOptions.col = newDonutOptions.col;
 		for (int i = 0; i < DONUT_RINGS; i++) {
 			const f32 theta1 = theta + ringDelta;
 			const f32 cosTheta1 = cosf(theta1);
@@ -260,7 +260,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual,
 	GX_SetViewport(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4);
 
-	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
+	draw_donut((donut_model_options_t){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
 
 	GRRLIB_Screen2Texture(0, 0, shapeBuffer, true);
 
@@ -276,7 +276,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual,
 
 	set_tex(flavor, doSprinkles);
 
-	draw_donut((DonutOptions){DONUT_MINOR, DONUT_MAJOR, vertex}, true);
+	draw_donut((donut_model_options_t){DONUT_MINOR, DONUT_MAJOR, vertex}, true);
 
 	GRRLIB_Screen2Texture(0, 0, donutBuffer, true);
 

@@ -37,7 +37,7 @@ static bool stop = false;
 static u8 flavor = 0;
 static u8 selected = 0;
 static Menu currentMenu = NOMENU;
-static bool ooer = false;
+static menu_result_t menuResult;
 
 int main(int argc, char **argv) {
 	char splash[44], title[83], flavorName[83];
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
 	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
 	u8 showFlavor = 0;
-	while(SYS_MainLoop()) {
+	while (SYS_MainLoop()) {
 		GX_SetNumChans(1);
 		guVecMultiply(view, &lpos, &lpos);
 
@@ -137,21 +137,30 @@ int main(int argc, char **argv) {
 		print(showFlavor ? flavorName : title);
 		print("\x1b[0;0;0m");
 
-		if (ooer) {
+		if (menuResult.ooer) {
 			format_splash(splashMessages[4], splash);
-			ooer = !ooer;
+			menuResult.ooer = !menuResult.ooer;
 		}
 
-		if (currentMenu == NOMENU) {
-			if (BUTTON_EXIT) {
-				stop = true;
-			} else if (BUTTON_START) {
-				currentMenu = MAIN;
-				selected = menuSettings[MAIN].defaultItem;
-			}
-		} else {
-			render_menu(currentMenu, selected);
-			ooer = handle_general_menu_buttons(&currentMenu, &selected);
+		if (menuResult.exit) {
+			stop = true;
+		}
+
+		switch (currentMenu) {
+			case NOMENU:
+				if (BUTTON_EXIT) {
+					stop = true;
+				} else if (BUTTON_START) {
+					currentMenu = MAIN;
+					selected = menuSettings[MAIN].defaultItem;
+				}
+				break;
+			case OPTIONS:
+				render_options_menu(selected);
+				break;
+			default:
+				render_general_menu(currentMenu, selected);
+				menuResult = handle_general_menu_buttons(&currentMenu, &selected);
 		}
 
 		if (stop) break;
@@ -163,6 +172,7 @@ int main(int argc, char **argv) {
 		B += 0.01f;
 	}
 
+	VIDEO_SetBlack(true);
 	GRRLIB_2dMode();
 	donut_free();
 	GRRLIB_Exit();

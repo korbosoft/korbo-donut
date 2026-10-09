@@ -23,7 +23,14 @@ typedef struct {
 	f32 minor;
 	f32 major;
 	u32 col;
-} DonutOptions;
+} donut_model_options_t;
+
+typedef struct {
+	donut_t flavor;
+	bool renderingType;
+	bool manual;
+	bool doSprinkles;
+} donut_options_t;
 
 extern void donut_init(void);
 extern void donut_free(void);
