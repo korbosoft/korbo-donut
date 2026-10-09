@@ -28,14 +28,10 @@
 // static GXRModeObj *rmode = NULL;
 static void *cxfb = NULL;
 
-static bool doSprinkles = false;
-static bool manual = false;
-static bool paused = true;
-static bool renderingType = false;
-static bool showControls = false;
+// static bool paused = true;
 static bool stop = false;
-static u8 flavor = 0;
 static u8 selected = 0;
+static donut_options_t donutOptions;
 static Menu currentMenu = NOMENU;
 static menu_result_t menuResult;
 
@@ -111,6 +107,8 @@ int main(int argc, char **argv) {
 	GX_SetCullMode(GX_CULL_FRONT);
 	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
+	donutOptions.flavor = flavors[0];
+
 	u8 showFlavor = 0;
 	while (SYS_MainLoop()) {
 		GX_SetNumChans(1);
@@ -120,13 +118,20 @@ int main(int argc, char **argv) {
 		GX_InitLightColor(&lobj, DONUT_LIGHT);
 		GX_InitLightDistAttn(&lobj, 0.5f, 0.5f, GX_DA_MEDIUM);
 		GX_LoadLightObj(&lobj,GX_LIGHT0);
-		GX_SetChanAmbColor(GX_COLOR0A0, renderingType ? LC_DARKDARKDARK : LC_DARKER);
+		GX_SetChanAmbColor(GX_COLOR0A0, donutOptions.renderingType ? DONUT_CLASSIC_AMBIENT : DONUT_AMBIENT);
 		GX_SetChanCtrl(GX_COLOR0A0, GX_ENABLE, GX_SRC_REG, GX_SRC_VTX, GX_LIGHT0, GX_DF_CLAMP, GX_AF_NONE);
 
 		input_scan();
 		input_down(0, 0);
 
-		render_frame(A, B, flavors[flavor], renderingType, manual, doSprinkles);
+		render_frame(
+			A,
+			B,
+			donutOptions.flavor,
+			donutOptions.renderingType,
+			donutOptions.manual,
+			donutOptions.doSprinkles
+		);
 
 		render_menu_info(splash);
 
@@ -139,7 +144,7 @@ int main(int argc, char **argv) {
 
 		if (menuResult.ooer) {
 			format_splash(splashMessages[4], splash);
-			menuResult.ooer = !menuResult.ooer;
+			menuResult.ooer = false;
 		}
 
 		if (menuResult.exit) {
@@ -156,6 +161,7 @@ int main(int argc, char **argv) {
 				}
 				break;
 			case OPTIONS:
+				render_options_menu(selected);
 				render_options_menu(selected);
 				break;
 			default:
