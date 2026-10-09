@@ -37,7 +37,7 @@ void format_splash(const char *input, char *output) {
 }
 
 inline int print(const char *str) {
-	return fwrite(str, strlen(str), 1, stdout);
+	return fputs(str, stdout);
 }
 
 inline char *u82Str(char* buf, u8 n) {

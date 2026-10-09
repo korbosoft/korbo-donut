@@ -34,8 +34,8 @@ def create_ascii_lut(signatures):
         min_diff = float('inf')
 
         for char_code, sig in signatures:
-            # manhattan distance (SAD)
-            diff = sum(abs(target[k] - sig[k]) for k in range(8))
+            # Squared Euclidean Distance
+            diff = sum((target[k] - sig[k]) ** 2 for k in range(8))
 
             if diff < min_diff:
                 min_diff = diff
@@ -89,5 +89,5 @@ if __name__ == "__main__":
         index = int(i * (num_chars - 1) / (RAMP_LENGTH - 1))
         ramp.append(densities[index]['char'])
 
-    print('const char ramp[] = "' + "".join(ramp) + '"; // generated with tools/gen.py')
+    print('const char ramp[] = "' + "".join(ramp) + '"; // generated with tools/lutgen.py')
     print('boobulation complete. Bye bye ;^)')

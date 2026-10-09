@@ -283,7 +283,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual,
 	char frameBuffer[DONUT_WIDTH*DONUT_HEIGHT*20 + 1];
 	char *ptr = frameBuffer;
 	s16 last_r = -1, last_g = -1, last_b = -1;
-	const char ramp[] = " :+)}rvuj5bhED0Q"; // generated with tools/gen.py
+	const char ramp[] = " :+)}rvuj5bhED0Q"; // generated with tools/lutgen.py
 	print("\x1b[2H");
 	bool nonSpaceCharsPrinted = false;
 	for(u8 j = 0; j < DONUT_HEIGHT; j++) {

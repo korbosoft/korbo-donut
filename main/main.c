@@ -22,20 +22,19 @@
 #include "flavors.h"
 #include "music.h"
 #include "tui.h"
-
 #define DEFAULT_FIFO_SIZE	(256*1024)
 
 // static GXRModeObj *rmode = NULL;
 static void *cxfb = NULL;
 
 // static bool paused = true;
-static bool stop = false;
-static u8 selected = 0;
-static donut_options_t donutOptions;
-static Menu currentMenu = NOMENU;
-static menu_result_t menuResult;
 
 int main(int argc, char **argv) {
+	bool stop = false;
+	u8 selected = 0;
+	Menu currentMenu = NOMENU;
+	menu_result_t menuResult;
+
 	char splash[44], title[83], flavorName[83];
 	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
@@ -81,7 +80,7 @@ int main(int argc, char **argv) {
 
 	float A = 1, B = 1;
 
-	#define SPLASH_COUNT 12
+	#define SPLASH_COUNT 13
 
 	const char *splashMessages[SPLASH_COUNT] = {
 		[0] = "Also try DS Donut!",
@@ -95,13 +94,15 @@ int main(int argc, char **argv) {
 		[8] = "You best not forget The Bob Incident.",
 		[9] = "so there's this series called HLVRAI and it",
 		[10] = "You LOVE Shit River. You LOVE it.",
-		[11] = "The most over-engineered Wii/GC homebrew!"
+		[11] = "The most over-engineered Wii/GC homebrew!",
+		[12] = "As seen on Jiga Tech!"
 	};
 
 	const char *eggSplashMessages[4] = {
 		[0] = "oh man please to help i am not good with co", // ooer
 		[1] = "Hop on Hell Diver!", // banana cookie pie
 		[2] = "Something something echolalia!", // timcord
+		// TODO: "how do I leave", "i can smell you pronouns"
 		[3] = "Sponsored by Dickass Auto!" // wiilink
 	};
 
@@ -115,6 +116,9 @@ int main(int argc, char **argv) {
 	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
 	donutOptions.flavor = flavors[0];
+	donutOptions.renderingType = false;
+	donutOptions.manual = false;
+	donutOptions.doSprinkles = false;
 
 	u8 showFlavor = 0;
 	while (SYS_MainLoop()) {
@@ -147,6 +151,8 @@ int main(int argc, char **argv) {
 
 		print("\x1b[H");
 		print(showFlavor ? flavorName : title);
+		print("\x1b[H");
+		printf("%i", SYS_GetArenaSize());
 		print("\x1b[0;0;0m");
 
 		if (menuResult.ooer)
@@ -174,7 +180,6 @@ int main(int argc, char **argv) {
 				}
 				break;
 			case OPTIONS:
-				render_options_menu(selected);
 				render_options_menu(selected);
 				break;
 			default:
