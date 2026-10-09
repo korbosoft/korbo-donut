@@ -99,10 +99,10 @@ int main(int argc, char **argv) {
 	};
 
 	const char *eggSplashMessages[4] = {
-		[0] = "oh man please to help i am not good with com",
-		[1] = "Hop on Hell Diver!",
-		[2] = "Something something echolalia!",
-		[3] = "Sponsored by Dickass Auto!"
+		[0] = "oh man please to help i am not good with co", // ooer
+		[1] = "Hop on Hell Diver!", // banana cookie pie
+		[2] = "Something something echolalia!", // timcord
+		[3] = "Sponsored by Dickass Auto!" // wiilink
 	};
 
 	if (rand() % 50) {
