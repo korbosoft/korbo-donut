@@ -21,15 +21,7 @@
 "\x1b[19;22H" " korbosoft/korbo-donut.             " \
 "\x1b[20;22H" "                                    "
 
-#define STRING_MAIN_BOX \
-"╔════════════════════════════════════════════════════════════════════════════╗" \
-"║ \x1b[4mKorbo's Donut Shop v"VERSION" :3\x1b[0;104;97m   \x1b[93m%s\x1b[97m ║" \
-"║ Originally based off \"Wii Donut\" by emilydaemon                            ║" \
-"║ Written, and otherwise created by Korbo Q. Lamp                            ║" \
-"║ Greetings to: WiiLink, /r/Ooer, Wii Super Cool.    " STRING_CONTROLS     " ║" \
-"╚════════════════════════════════════════════════════════════════════════════╝"
-
-// honorable mention greet: sudomemo, didn't have enough space for it sadly
+#define STRING_BACK "Back"
 
 #ifdef HW_RVL
 #define STRING_CONTROLS "Press +/START for menu."

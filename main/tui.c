@@ -34,9 +34,7 @@ static void select_default(u8 currentMenu, u8 *selected) {
 	*selected = menuSettings[currentMenu].defaultItem;
 }
 
-static void restore_selection(u8 *selected) {
-	*selected = prevSelected;
-}
+static void restore_selection(u8 *selected) { *selected = prevSelected; }
 
 static void main_options(Menu *currentMenu, u8 *selected) {
 	*currentMenu = OPTIONS;
@@ -48,13 +46,12 @@ static void main_greetz(Menu *currentMenu, u8 *selected) {
 	select_default(*currentMenu, selected);
 }
 
-static void main_exit(Menu *currentMenu, u8 *selected) {
-	ret.exit = true;
-}
+static void main_exit(Menu *currentMenu, u8 *selected) { ret.exit = true; }
 
-static void greetz_ooer(Menu *currentMenu, u8 *selected) {
-	ret.ooer = true;
-}
+static void greetz_wiilink(Menu *currentMenu, u8 *selected) { ret.wiilink = true; }
+static void greetz_ooer(Menu *currentMenu, u8 *selected) { ret.ooer = true; }
+static void greetz_timcord(Menu *currentMenu, u8 *selected) { ret.tim = true; }
+static void greetz_bcp(Menu *currentMenu, u8 *selected) { ret.bcp = true; }
 
 static void common_back(Menu *currentMenu, u8 *selected) {
 	Menu prevMenu = menuSettings[*currentMenu].prevMenu;
@@ -81,10 +78,10 @@ static const MenuActionFn menu_actions[MENU_COUNT][ITEMS_MAX] = {
 		NULL
 	},
 	[GREETZ] = {
-		NULL,
 		greetz_ooer,
-		NULL,
-		NULL,
+		greetz_bcp,
+		greetz_timcord,
+		greetz_wiilink,
 		common_back
 	},
 };
@@ -102,6 +99,9 @@ menu_result_t handle_general_menu_buttons(Menu *currentMenu, u8 *selected) {
 	u8 itemCount = menuSettings[*currentMenu].itemCount;
 
 	ret.ooer = false;
+	ret.bcp = false;
+	ret.tim = false;
+	ret.wiilink = false;
 	ret.exit = false;
 
 	if (BUTTON_UP) {
@@ -130,17 +130,17 @@ inline void gotoxy(u8 x, u8 y) {
 }
 
 static char *menu_greetz[] = {
-	"WiiLink",
 	"/r/Ooer",
-	"Timcord",
 	"BCP",
-	"Back"
+	"Timcord",
+	"WiiLink",
+	STRING_BACK
 };
 
 static char *menu_main[] = {
 	"Options",
 	"Greetings",
-	"Back",
+	STRING_BACK,
 	"Exit"
 };
 

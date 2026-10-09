@@ -9,7 +9,7 @@ enum DonutSpecial {
 };
 
 enum DonutTexture {
-	NONE,
+	NOTEXTURE,
 	RAINBOW,
 	PASTEL,
 	METAL,
@@ -35,7 +35,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
 		MAPPED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Lard Lad",
@@ -43,7 +43,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{206, 137, 55, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Chocolate",
@@ -51,7 +51,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Purple",
@@ -59,7 +59,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Lemon",
@@ -67,7 +67,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Strawberry",
@@ -75,7 +75,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Pumpkin",
@@ -83,7 +83,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Key Lime",
@@ -91,7 +91,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Blueberry",
@@ -99,7 +99,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Caramel",
@@ -107,7 +107,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Pistachio",
@@ -115,7 +115,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 187, 98, 255},
 		{255, 255, 255, 255},
 		FROSTED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Toxic Waste",
@@ -123,7 +123,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		{0, 255, 0, 255},
 		MAPPED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Glazed",
@@ -131,7 +131,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		{255, 226, 187, 255},
 		MAPPED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Bagel",
@@ -139,7 +139,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		{255, 187, 98, 255},
 		MAPPED,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Ghost",
@@ -147,7 +147,7 @@ static const donut_t flavors[FROSTING_FLAVORS] = {
 		{255, 255, 255, 255},
 		{255, 255, 255, 192},
 		GHOSTLY,
-		NONE
+		NOTEXTURE
 	},
 	{
 		"Uranium-235",

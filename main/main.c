@@ -69,7 +69,8 @@ int main(int argc, char **argv) {
 // #endif
 	float donAspect = aspect;
 
-	donAspect *= (float)DONUT_WIDTH / (float)(DONUT_HEIGHT*2); // times 2 because text characters are 8x16
+	// times 2 because text characters are 8x16
+	donAspect *= (float)DONUT_WIDTH / (float)(DONUT_HEIGHT*2);
 
 	music_init(title);
 
@@ -80,22 +81,28 @@ int main(int argc, char **argv) {
 
 	float A = 1, B = 1;
 
-	#define SPLASH_COUNT 13
+	#define SPLASH_COUNT 12
 
 	const char *splashMessages[SPLASH_COUNT] = {
 		[0] = "Also try DS Donut!",
 		[1] = "Also try 3DS Donut!",
 		[2] = "Also try Lily Skate!",
 		[3] = "Better than Wii Donut!",
-		[4] = "oh man please to help i am not good with co",
-		[5] = "(\"Doughnut\" if you're british)",
-		[6] = "Korbo loves you <3",
-		[7] = "Did you know you can change the music?",
-		[8] = "GBA Donut: Gone but not forgotten </3",
-		[9] = "You best not forget the spongebob incident.",
-		[10] = "so there's this series called HLVRAI and it",
-		[11] = "You love Shit River.",
-		[12] = "The most overengineered Wii/GC homebrew!"
+		[4] = "(\"Doughnut\" if you're british)",
+		[5] = "Korbo loves you <3",
+		[6] = "Did you know you can change the music?",
+		[7] = "GBA Donut: Gone but not forgotten </3",
+		[8] = "You best not forget The Bob Incident.",
+		[9] = "so there's this series called HLVRAI and it",
+		[10] = "You LOVE Shit River. You LOVE it.",
+		[11] = "The most over-engineered Wii/GC homebrew!"
+	};
+
+	const char *eggSplashMessages[4] = {
+		[0] = "oh man please to help i am not good with com",
+		[1] = "Hop on Hell Diver!",
+		[2] = "Something something echolalia!",
+		[3] = "Sponsored by Dickass Auto!"
 	};
 
 	if (rand() % 50) {
@@ -142,14 +149,20 @@ int main(int argc, char **argv) {
 		print(showFlavor ? flavorName : title);
 		print("\x1b[0;0;0m");
 
-		if (menuResult.ooer) {
-			format_splash(splashMessages[4], splash);
-			menuResult.ooer = false;
-		}
+		if (menuResult.ooer)
+			format_splash(eggSplashMessages[0], splash);
 
-		if (menuResult.exit) {
+		if (menuResult.bcp)
+			format_splash(eggSplashMessages[1], splash);
+
+		if (menuResult.tim)
+			format_splash(eggSplashMessages[2], splash);
+
+		if (menuResult.wiilink)
+			format_splash(eggSplashMessages[3], splash);
+
+		if (menuResult.exit)
 			stop = true;
-		}
 
 		switch (currentMenu) {
 			case NOMENU:

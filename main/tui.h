@@ -13,6 +13,9 @@ typedef enum {
 
 typedef struct {
 	bool ooer;
+	bool bcp;
+	bool tim;
+	bool wiilink;
 	bool exit;
 } menu_result_t;
 
