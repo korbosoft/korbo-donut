@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 	bool stop = false;
 	u8 selected = 0;
 	Menu currentMenu = NOMENU;
-	menu_result_t menuResult;
+	MenuResult menuResult;
 
 	char splash[44], title[83], flavorName[83];
 	guVector lpos = {0.0f, 1.0f, 0.0f};
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 	GX_SetCullMode(GX_CULL_FRONT);
 	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
-	donutOptions.flavor = flavors[0];
+	donutOptions.flavor = 0;
 	donutOptions.renderingType = false;
 	donutOptions.manual = false;
 	donutOptions.doSprinkles = false;
@@ -138,13 +138,13 @@ int main(int argc, char **argv) {
 		render_frame(
 			A,
 			B,
-			donutOptions.flavor,
+			flavors[donutOptions.flavor],
 			donutOptions.renderingType,
 			donutOptions.manual,
 			donutOptions.doSprinkles
 		);
 
-		render_menu_info(splash);
+		render_info_menu(&currentMenu, splash);
 
 		if (showFlavor)
 			showFlavor--;
@@ -181,6 +181,7 @@ int main(int argc, char **argv) {
 				break;
 			case OPTIONS:
 				render_options_menu(selected);
+				menuResult = handle_general_menu_buttons(&currentMenu, &selected);
 				break;
 			default:
 				render_general_menu(currentMenu, selected);

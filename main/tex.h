@@ -19,6 +19,6 @@ extern GRRLIB_texImg *sprinklesTex;
 extern void tex_init(void);
 extern void tex_free(void);
 extern void genRainbowTex(GRRLIB_texImg *tex, u16 t, bool pastel);
-extern void set_tex(donut_t flavor, bool doSprinkles);
+extern void set_tex(Donut flavor, bool doSprinkles);
 
 #endif

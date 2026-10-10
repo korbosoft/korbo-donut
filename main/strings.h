@@ -24,9 +24,11 @@
 #define STRING_BACK "Back"
 
 #ifdef HW_RVL
-#define STRING_CONTROLS "Press +/START for menu."
+#define STRING_PRESSSTART "Press +/START for menu."
 #else
-#define STRING_CONTROLS "  Press START for menu."
+#define STRING_PRESSSTART "  Press START for menu."
 #endif
+
+#define STRING_PRESSB "    Press B to go back."
 
 #endif

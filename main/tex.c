@@ -39,7 +39,7 @@ GXTexObj init_tex_obj(GRRLIB_texImg *tex) {
 	return texObj;
 }
 
-void set_tex(donut_t flavor, bool doSprinkles) {
+void set_tex(Donut flavor, bool doSprinkles) {
 	GXTexObj mainTexObj;
 	GRRLIB_texImg *mainTex;
 

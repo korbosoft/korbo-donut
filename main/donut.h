@@ -23,17 +23,17 @@ typedef struct {
 	f32 minor;
 	f32 major;
 	u32 col;
-} donut_model_options_t;
+} DonutModelOptions;
 
 typedef struct {
-	donut_t flavor;
+	u8 flavor;
 	bool renderingType;
 	bool manual;
 	bool doSprinkles;
-} donut_options_t;
+} DonutOptions;
 
 extern void donut_init(void);
 extern void donut_free(void);
-extern void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual, bool doSprinkles);
+extern void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual, bool doSprinkles);
 
 #endif

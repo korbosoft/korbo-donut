@@ -18,17 +18,17 @@ enum DonutTexture {
 };
 
 typedef struct {
-	char name[17];
+	char name[13];
 	GXColor top;
 	GXColor bottom;
 	GXColor vertex;
 	enum DonutSpecial special;
 	enum DonutTexture tex;
-} donut_t;
+} Donut;
 
-#define FROSTING_FLAVORS 25
+#define MAX_FLAVORS 25
 
-static const donut_t flavors[FROSTING_FLAVORS] = {
+static const Donut flavors[MAX_FLAVORS] = {
 	{
 		"Powdered",
 		{255, 255, 255, 255},

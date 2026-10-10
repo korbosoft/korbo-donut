@@ -26,12 +26,12 @@ typedef struct {
 	f32 pos1[3];
 	f32 nrm1[3];
 	f32 tex1[2];
-} donut_model_t;
+} DonutModel;
 
-static donut_model_options_t donutOptions;
-static donut_model_t donutModel[DONUT_RINGS][DONUT_SIDES + 1];
+static DonutModelOptions donutOptions;
+static DonutModel donutModel[DONUT_RINGS][DONUT_SIDES + 1];
 
-static void draw_donut(donut_model_options_t newDonutOptions, bool filled) {
+static void draw_donut(DonutModelOptions newDonutOptions, bool filled) {
 	if ((donutOptions.major != newDonutOptions.major) ||
 		(donutOptions.minor != newDonutOptions.minor) ||
 		(donutOptions.col != newDonutOptions.col)) {
@@ -135,7 +135,7 @@ void donut_free(void) {
 	tex_free();
 }
 
-void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual, bool doSprinkles) {
+void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual, bool doSprinkles) {
 	static Mtx base_orientation = {
 		{1.0f, 0.0f, 0.0f, 0.0f},
 		{0.0f, 1.0f, 0.0f, 0.0f},
@@ -260,7 +260,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual,
 	GX_SetViewport(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH*2, DONUT_HEIGHT*4);
 
-	draw_donut((donut_model_options_t){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
+	draw_donut((DonutModelOptions){DONUT_MINOR, DONUT_MAJOR, 0xFFFFFFFF}, true);
 
 	GRRLIB_Screen2Texture(0, 0, shapeBuffer, true);
 
@@ -276,7 +276,7 @@ void render_frame(f32 A, f32 B, donut_t flavor, bool renderingType, bool manual,
 
 	set_tex(flavor, doSprinkles);
 
-	draw_donut((donut_model_options_t){DONUT_MINOR, DONUT_MAJOR, vertex}, true);
+	draw_donut((DonutModelOptions){DONUT_MINOR, DONUT_MAJOR, vertex}, true);
 
 	GRRLIB_Screen2Texture(0, 0, donutBuffer, true);
 
