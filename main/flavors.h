@@ -14,7 +14,8 @@ enum DonutTexture {
 	PASTEL,
 	METAL,
 	SPONGE,
-	MUNCH
+	MUNCH,
+	FUR
 };
 
 typedef struct {
@@ -26,7 +27,7 @@ typedef struct {
 	enum DonutTexture tex;
 } Donut;
 
-#define MAX_FLAVORS 25
+#define MAX_FLAVORS 35
 
 static const Donut flavors[MAX_FLAVORS] = {
 	{
@@ -228,6 +229,86 @@ static const Donut flavors[MAX_FLAVORS] = {
 		{255, 255, 255, 255},
 		REFLECTIVE,
 		MUNCH
+	},
+	{
+		"Fur",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Red)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 128, 128, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Orange)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 192, 128, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Yellow)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 255, 128, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Green)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{128, 255, 128, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Blue)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{128, 128, 255, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Pink)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 128, 255, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Purple)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{128, 64, 128, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Gray)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{128, 128, 128, 255},
+		MAPPED,
+		FUR
+	},
+	{
+		"Fur (Brown)",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{128, 64, 0, 255},
+		MAPPED,
+		FUR
 	}
 };
 

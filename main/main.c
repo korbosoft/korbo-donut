@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 
 	float A = 1, B = 1;
 
-	#define SPLASH_COUNT 13
+	#define SPLASH_COUNT 14
 
 	const char *splashMessages[SPLASH_COUNT] = {
 		[0] = "Also try DS Donut!",
@@ -95,7 +95,8 @@ int main(int argc, char **argv) {
 		[9] = "so there's this series called HLVRAI and it",
 		[10] = "You LOVE Shit River. You LOVE it.",
 		[11] = "The most over-engineered Wii/GC homebrew!",
-		[12] = "As seen on Jiga Tech!"
+		[12] = "As seen on Jiga Tech!",
+		[13] = "BlueSheep was here!"
 	};
 
 	const char *eggSplashMessages[4] = {
@@ -119,6 +120,12 @@ int main(int argc, char **argv) {
 	donutOptions.renderingType = false;
 	donutOptions.manual = false;
 	donutOptions.doSprinkles = false;
+
+	menuResult.ooer = false;
+	menuResult.bcp = false;
+	menuResult.tim = false;
+	menuResult.wiilink = false;
+	menuResult.exit = false;
 
 	u8 showFlavor = 0;
 	while (SYS_MainLoop()) {

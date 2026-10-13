@@ -15,6 +15,7 @@ extern GRRLIB_texImg *tintedMetalTex;
 extern GRRLIB_texImg *spongeTex;
 extern GRRLIB_texImg *holoTex;
 extern GRRLIB_texImg *sprinklesTex;
+extern GRRLIB_texImg *furTex;
 
 extern void tex_init(void);
 extern void tex_free(void);
