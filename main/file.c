@@ -9,30 +9,37 @@ int dvmInitResult;
 
 FileList* create_file_list(void) {
 	FileList *list = malloc(sizeof(FileList));
-	list->capacity = 16; // Sensible default starting capacity
+	if (!list) return NULL;
+	list->capacity = 16;
 	list->count = 0;
 	list->filenames = malloc(list->capacity * sizeof(char *));
+	if (!list->filenames) {
+		free(list);
+		return NULL;
+	}
 	return list;
 }
 
 static int sort_files(const void *a, const void *b) {
-    const char *str1 = *(const char **)a;
-    const char *str2 = *(const char **)b;
-    return strcmp(str1, str2);
+	const char *str1 = *(const char **)a;
+	const char *str2 = *(const char **)b;
+	return strcmp(str1, str2);
 }
 
 void add_file_to_list(FileList *list, const char *filename) {
-    if (list->count >= list->capacity) {
-        list->capacity *= 2;
-        list->filenames = realloc(list->filenames, list->capacity * sizeof(char *));
-    }
-    list->filenames[list->count] = strdup(filename);
-    list->count++;
-
-    qsort(list->filenames, list->count, sizeof(char *), sort_files);
+	if (list->count >= list->capacity) {
+		size_t new_capacity = list->capacity * 2;
+		char **temp = realloc(list->filenames, new_capacity * sizeof(char *));
+		if (!temp) return;
+		list->filenames = temp;
+		list->capacity = new_capacity;
+	}
+	list->filenames[list->count] = strdup(filename);
+	list->count++;
 }
 
 void free_file_list(FileList *list) {
+	if (!list) return;
 	for (int i = 0; i < list->count; i++) {
 		free(list->filenames[i]);
 	}
@@ -56,13 +63,20 @@ int file_find(FileList *list, const char *path, const char *pattern, const int f
 						continue;
 
 					char full_path[512];
-					snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+					int written = snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+					if (written < 0 || (size_t)written >= sizeof(full_path)) {
+						continue;
+					}
 
 					add_file_to_list(list, full_path);
 					count++;
 				}
 			}
 			closedir(dir);
+
+			if (list->count > 0) {
+				qsort(list->filenames, list->count, sizeof(char *), sort_files);
+			}
 		}
 	}
 	return count;

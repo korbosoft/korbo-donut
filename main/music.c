@@ -30,7 +30,9 @@ static bool is_title_empty(const char *title) {
 }
 
 void music_play(char *filename) {
-	FILE *f = file_open(filename, "rb");
+	FILE *f = NULL;
+	if (filename)
+		f = file_open(filename, "rb");
 
 	if (f) {
 		fseek(f, 0, SEEK_END);
@@ -46,7 +48,10 @@ void music_play(char *filename) {
 
 		GRRMOD_SetMOD(module,module_size);
 		file_close(f);
-	} else { GRRMOD_SetMOD(music_it, music_it_size); }
+	} else {
+		GRRMOD_SetMOD(music_it, music_it_size);
+		currentSong = -1;
+	}
 
 	char *title = GRRMOD_GetSongTitle();
 	format_info("Song: ", is_title_empty(title) ? "Untitled" : title, title_pointer, true);
@@ -64,15 +69,24 @@ void music_init(char *title_display) {
 
 	GRRMOD_Init(SYS_GetSoundMode()); // check for mono
 
-	music_play(list->filenames[0]);
+	if (list->filenames) {
+		if (list->filenames[0]) {
+			music_play(list->filenames[0]);
+		} else { music_play(NULL); }
+	} else { music_play(NULL); }
 }
 
 void music_tick() {
 	if (GRRMOD_GetLoopCount() > 0) {
 		if (currentSong != -1) {
-			if (++currentSong >= list->count)
-				currentSong = 0;
-			music_play(list->filenames[currentSong]);
+			if (list) {
+				if (++currentSong >= list->count)
+					currentSong = 0;
+				if (list->filenames) {
+					if (list->filenames[0])
+						music_play(list->filenames[currentSong]);
+				}
+			}
 		}
 	}
 }
