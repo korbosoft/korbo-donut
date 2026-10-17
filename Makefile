@@ -46,4 +46,4 @@ release:
 	nano -L temp.md
 	@printf "\n\nThe debug ELFs have no extra features other than debug info embedded into them." >> temp.md
 	gh release create v$(VERSION) -t v$(VERSION) donut-wii.zip donut-gamecube.zip donut-wii-debug.elf donut-gamecube-debug.elf -F temp.md
-	@rm -rf ./donut-wii/ ./donut-gamecube/ donut-wii-debug.elf donut-gamecube-debug.elf donut.zip donut-gamecube.zip temp.md
+	@rm -rf ./donut-wii/ ./donut-gamecube/ donut-wii-debug.elf donut-gamecube-debug.elf donut-wii.zip donut-gamecube.zip temp.md
