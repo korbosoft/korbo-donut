@@ -1,6 +1,6 @@
 .PHONY: clean gba gamecube wii
 
-VERSION	:= 8.2.0
+VERSION	:= 8.2.1
 
 CURDIR = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
@@ -18,7 +18,7 @@ wii:
 clean:
 	@cd $(CURDIR)
 	@rm -rf build-* *.elf *.dol
-	@echo i\'m awesome clean now. : \)
+	@echo "i'm awesome clean now. : )"
 
 release:
 	@git diff-files --quiet --ignore-submodules || { echo "ERROR: Unstaged files"; exit 1; }
@@ -32,14 +32,18 @@ release:
 	$(CURDIR)/genmeta.sh $(VERSION) > meta.xml
 	@echo
 	@echo Zipping release
-	@mkdir -p korbodonut/music
-	@cp boot.dol meta.xml icon.png ./korbodonut/
-	@cp donut-gc.elf donut-gc-debug.elf
+	@mkdir -p ./korbo-donut/music
+	@cp boot.dol meta.xml icon.png ./korbo-donut/
 	@cp boot.elf donut-wii-debug.elf
-	@zip -rv donut ./korbodonut/
+	@zip -rv donut-wii ./korbo-donut/
+	@rm -rf ./korbo-donut
+	@mkdir -p ./korbo-donut
+	@cp default.dol opening.bnr ./korbo-donut/
+	@cp default.elf donut-gamecube-debug.elf
+	@zip -rv donut- ./korbo-donut/
 	@echo
-	rm -f temp.md
+	@rm -f temp.md
 	nano -L temp.md
 	@printf "\n\nThe debug ELFs have no extra features other than debug info embedded into them." >> temp.md
-	gh release create v$(VERSION) -t v$(VERSION) donut.zip donut-gc.dol donut-wii-debug.elf donut-gc-debug.elf -F temp.md
-	@rm -rf ./korbodonut/ donut-wii-debug.elf donut-gc-debug.elf donut.zip temp.md
+	gh release create v$(VERSION) -t v$(VERSION) donut-wii.zip donut-gamecube.zip donut-wii-debug.elf donut-gamecube-debug.elf -F temp.md
+	@rm -rf ./donut-wii/ ./donut-gamecube/ donut-wii-debug.elf donut-gamecube-debug.elf donut.zip donut-gamecube.zip temp.md
