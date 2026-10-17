@@ -40,7 +40,7 @@ release:
 	@mkdir -p ./korbo-donut
 	@cp default.dol opening.bnr ./korbo-donut/
 	@cp default.elf donut-gamecube-debug.elf
-	@zip -rv donut- ./korbo-donut/
+	@zip -rv donut-gamecube ./korbo-donut/
 	@echo
 	@rm -f temp.md
 	nano -L temp.md
