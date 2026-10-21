@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <math.h>
 #include <unistd.h>
 #include <gccore.h>
 
@@ -22,12 +23,26 @@
 #include "flavors.h"
 #include "music.h"
 #include "tui.h"
-#define DEFAULT_FIFO_SIZE	(256*1024)
 
-// static GXRModeObj *rmode = NULL;
-static void *cxfb = NULL;
+static void *consoleXfb = NULL;
+static void *displayXfb = NULL; // needed so it all draws at once
 
-// static bool paused = true;
+u64 last_ticks = 0;
+static f64 A = 0, B = 0;
+
+void rotate_donut() {
+	u64 current_ticks = SYS_Time();
+	u64 diff_ticks = current_ticks - last_ticks;
+	last_ticks = current_ticks;
+
+	f64 delta_time = (f64)diff_ticks / (f64)PPC_TIMER_CLOCK;
+
+	A += 2.8 * delta_time;
+	B += 0.8 * delta_time;
+
+	A = fmod(A, M_PI * 2);
+	B = fmod(B, M_PI * 2);
+}
 
 int main(int argc, char **argv) {
 	bool stop = false;
@@ -39,37 +54,38 @@ int main(int argc, char **argv) {
 	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
 
-	srand(time(NULL));
+	srand(SYS_Time());
 
 	GRRLIB_Init();
 
 	input_init();
 
-	// Initialize the file... thing. I can't really call it the "file system", can I?
+	// Initialize the file... thing. I don't know what to call it
 	file_init();
 
 	// Allocate memory for the display in the uncached region
-	cxfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	size_t fbSize = rmode->fbWidth * rmode->xfbHeight * VI_DISPLAY_PIX_SZ;
+
+	consoleXfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	displayXfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 	GRRLIB_FillScreen(0x000000FF);
 
-	// Initialise the console, required for printf
-	CON_Init(cxfb, 8,16, rmode->fbWidth - 8,rmode->xfbHeight, rmode->fbWidth*VI_DISPLAY_PIX_SZ);
+	// Initialize the console, required for printf
+	CON_Init(consoleXfb, 8,16, rmode->fbWidth - 8,rmode->xfbHeight, rmode->fbWidth*VI_DISPLAY_PIX_SZ);
 	consoleSetFont(NULL, &(ConsoleFont){(u8*)donut_font_8x16, 0, 256});
 	//SYS_STDIO_Report(true);
-	VIDEO_SetNextFramebuffer(cxfb);
+	VIDEO_SetNextFramebuffer(displayXfb);
 
 	// setup our projection matrix
-	// float aspect = VIDEO_GetAspectRatio();
+	// f32 aspect = VIDEO_GetAspectRatio();
 // #ifndef HW_RVL
-	const float aspect = 4.0 / 3.0f;
+	const f32 aspect = 4.0 / 3.0f;
 // #else
-// 	const float aspect = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ?
+// 	const f32 aspect = (CONF_GetAspectRatio() == CONF_ASPECT_16_9) ?
 // 				   16.0f/9.0f : 4.0f/3.0f;
 // #endif
-	float donAspect = aspect;
-
-	// times 2 because text characters are 8x16
-	donAspect *= (float)DONUT_WIDTH / (float)(DONUT_HEIGHT*2);
+	f32 donAspect = aspect;
+	donAspect *= (f32)DONUT_WIDTH / (f32)(DONUT_HEIGHT * 2.0f);
 
 	music_init(title);
 
@@ -77,8 +93,6 @@ int main(int argc, char **argv) {
 	PROXY_Camera3dSettings(0.0f,0.0f,0.0f, 0,1,0, 0,0,0);
 
 	donut_init();
-
-	float A = 1, B = 1;
 
 	#define SPLASH_COUNT 14
 
@@ -114,7 +128,8 @@ int main(int argc, char **argv) {
 	}
 
 	GX_SetCullMode(GX_CULL_FRONT);
-	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(rmode, consoleXfb, COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(rmode, displayXfb, COLOR_BLACK);
 
 	donutOptions.flavor = 0;
 	donutOptions.renderingType = false;
@@ -128,6 +143,8 @@ int main(int argc, char **argv) {
 	menuResult.exit = false;
 
 	u8 showFlavor = 0;
+
+	last_ticks = SYS_Time();
 	while (SYS_MainLoop()) {
 		GX_SetNumChans(1);
 		guVecMultiply(view, &lpos, &lpos);
@@ -197,11 +214,11 @@ int main(int argc, char **argv) {
 
 		if (stop) break;
 
+		memcpy(displayXfb, consoleXfb, fbSize);
 		VIDEO_Flush();
 		VIDEO_WaitVSync();
 
-		A += 0.035f;
-		B += 0.01f;
+		rotate_donut();
 	}
 
 	VIDEO_SetBlack(true);
