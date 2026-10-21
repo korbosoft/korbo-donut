@@ -25,6 +25,7 @@
 #define DEFAULT_FIFO_SIZE	(256*1024)
 
 // static GXRModeObj *rmode = NULL;
+static void *cxfb = NULL;
 
 // static bool paused = true;
 
@@ -34,7 +35,7 @@ int main(int argc, char **argv) {
 	Menu currentMenu = NOMENU;
 	MenuResult menuResult;
 
-	char splash[44], title[83];
+	char splash[44], title[83], flavorName[83];
 	guVector lpos = {0.0f, 1.0f, 0.0f};
 	GXLightObj lobj;
 
@@ -48,13 +49,14 @@ int main(int argc, char **argv) {
 	file_init();
 
 	// Allocate memory for the display in the uncached region
+	cxfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 	GRRLIB_FillScreen(0x000000FF);
 
 	// Initialise the console, required for printf
-	CON_InitEx(rmode, 8,16, rmode->fbWidth - 16,rmode->xfbHeight - 32);
+	CON_Init(cxfb, 8,16, rmode->fbWidth - 8,rmode->xfbHeight, rmode->fbWidth*VI_DISPLAY_PIX_SZ);
 	consoleSetFont(NULL, &(ConsoleFont){(u8*)donut_font_8x16, 0, 256});
-	// SYS_STDIO_Report(true);
-	// VIDEO_SetNextFramebuffer(cxfb);
+	//SYS_STDIO_Report(true);
+	VIDEO_SetNextFramebuffer(cxfb);
 
 	// setup our projection matrix
 	// float aspect = VIDEO_GetAspectRatio();
@@ -112,7 +114,7 @@ int main(int argc, char **argv) {
 	}
 
 	GX_SetCullMode(GX_CULL_FRONT);
-	VIDEO_ClearFrameBuffer(rmode, VIDEO_GetCurrentFramebuffer(), COLOR_BLACK);
+	VIDEO_ClearFrameBuffer(rmode, cxfb, COLOR_BLACK);
 
 	donutOptions.flavor = 0;
 	donutOptions.renderingType = false;
@@ -125,6 +127,7 @@ int main(int argc, char **argv) {
 	menuResult.wiilink = false;
 	menuResult.exit = false;
 
+	u8 showFlavor = 0;
 	while (SYS_MainLoop()) {
 		GX_SetNumChans(1);
 		guVecMultiply(view, &lpos, &lpos);
@@ -152,8 +155,11 @@ int main(int argc, char **argv) {
 
 		render_info_menu(&currentMenu, splash);
 
+		if (showFlavor)
+			showFlavor--;
+
 		print("\x1b[H");
-		print(title);
+		print(showFlavor ? flavorName : title);
 		print("\x1b[0;0;0m");
 
 		if (menuResult.ooer)
