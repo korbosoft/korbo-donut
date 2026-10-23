@@ -15,7 +15,8 @@ enum DonutTexture {
 	METAL,
 	SPONGE,
 	MUNCH,
-	FUR
+	FUR,
+	FLASH
 };
 
 typedef struct {
@@ -27,7 +28,7 @@ typedef struct {
 	enum DonutTexture tex;
 } Donut;
 
-#define MAX_FLAVORS 35
+#define MAX_FLAVORS 36
 
 static const Donut flavors[MAX_FLAVORS] = {
 	{
@@ -146,7 +147,7 @@ static const Donut flavors[MAX_FLAVORS] = {
 		"Ghost",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
-		{255, 255, 255, 192},
+		{255, 255, 255, 128},
 		GHOSTLY,
 		NOTEXTURE
 	},
@@ -309,6 +310,14 @@ static const Donut flavors[MAX_FLAVORS] = {
 		{128, 64, 0, 255},
 		MAPPED,
 		FUR
+	},
+	{
+		"Flash",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		REFLECTIVE,
+		FLASH
 	}
 };
 

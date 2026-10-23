@@ -39,6 +39,7 @@ void rotate_donut() {
 
 	A += 2.8 * delta_time;
 	B += 0.8 * delta_time;
+	// TODO: Manual donut speed
 
 	A = fmod(A, M_PI * 2);
 	B = fmod(B, M_PI * 2);

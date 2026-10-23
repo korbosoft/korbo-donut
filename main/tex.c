@@ -12,6 +12,7 @@
 #include "frosting_png.h"
 #include "fur_png.h"
 #include "metal_png.h"
+#include "flash_png.h"
 #include "sponge_png.h"
 #include "sprinkles_png.h"
 
@@ -20,6 +21,7 @@ GRRLIB_texImg *frostingTex;
 GRRLIB_texImg *rainbowTex;
 GRRLIB_texImg *pastelTex;
 GRRLIB_texImg *metalTex;
+GRRLIB_texImg *flashTex;
 GRRLIB_texImg *tintedMetalTex;
 GRRLIB_texImg *spongeTex;
 GRRLIB_texImg *holoTex;
@@ -70,6 +72,9 @@ void set_tex(Donut flavor, bool doSprinkles) {
 				break;
 			case FUR:
 				mainTex = furTex;
+				break;
+			case FLASH:
+				mainTex = flashTex;
 				break;
 			default:
 				mainTex = whitePixel;
@@ -238,6 +243,7 @@ void tex_init(void) {
 	holoTex = genHoloTex(256, 256);
 	sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 	furTex = GRRLIB_LoadTexturePNG(fur_png);
+	flashTex = GRRLIB_LoadTexturePNG(flash_png);
 }
 
 void tex_free(void) {
@@ -251,4 +257,5 @@ void tex_free(void) {
 	GRRLIB_FreeTexture(holoTex);
 	GRRLIB_FreeTexture(sprinklesTex);
 	GRRLIB_FreeTexture(furTex);
+	GRRLIB_FreeTexture(flashTex);
 }
