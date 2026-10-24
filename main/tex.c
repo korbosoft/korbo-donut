@@ -14,6 +14,7 @@
 #include "metal_png.h"
 #include "flash_png.h"
 #include "sponge_png.h"
+#include "lsponge_png.h"
 #include "sprinkles_png.h"
 
 GRRLIB_texImg *whitePixel;
@@ -24,6 +25,7 @@ GRRLIB_texImg *metalTex;
 GRRLIB_texImg *flashTex;
 GRRLIB_texImg *tintedMetalTex;
 GRRLIB_texImg *spongeTex;
+GRRLIB_texImg *lSpongeTex;
 GRRLIB_texImg *holoTex;
 GRRLIB_texImg *sprinklesTex;
 GRRLIB_texImg *furTex;
@@ -67,7 +69,10 @@ void set_tex(Donut flavor, bool doSprinkles) {
 			case SPONGE:
 				mainTex = spongeTex;
 				break;
-			case MUNCH:
+			case LSPONGE:
+				mainTex = lSpongeTex;
+				break;
+			case HOLO:
 				mainTex = holoTex;
 				break;
 			case FUR:
@@ -240,6 +245,7 @@ void tex_init(void) {
 	metalTex = GRRLIB_LoadTexturePNG(metal_png);
 	tintedMetalTex = genTintedMetalTex();
 	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
+	lSpongeTex = GRRLIB_LoadTexturePNG(lsponge_png);
 	holoTex = genHoloTex(256, 256);
 	sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
 	furTex = GRRLIB_LoadTexturePNG(fur_png);
@@ -254,6 +260,7 @@ void tex_free(void) {
 	GRRLIB_FreeTexture(metalTex);
 	GRRLIB_FreeTexture(tintedMetalTex);
 	GRRLIB_FreeTexture(spongeTex);
+	GRRLIB_FreeTexture(lSpongeTex);
 	GRRLIB_FreeTexture(holoTex);
 	GRRLIB_FreeTexture(sprinklesTex);
 	GRRLIB_FreeTexture(furTex);

@@ -14,7 +14,8 @@ enum DonutTexture {
 	PASTEL,
 	METAL,
 	SPONGE,
-	MUNCH,
+	LSPONGE,
+	HOLO,
 	FUR,
 	FLASH
 };
@@ -219,9 +220,9 @@ static const Donut flavors[MAX_FLAVORS] = {
 		"Lovey Sponge",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
-		{255, 128, 128, 255},
+		{255, 255, 255, 255},
 		MAPPED,
-		SPONGE
+		LSPONGE
 	},
 	{
 		"Holographic",
@@ -229,7 +230,7 @@ static const Donut flavors[MAX_FLAVORS] = {
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
 		REFLECTIVE,
-		MUNCH
+		HOLO
 	},
 	{
 		"Fur",
