@@ -23,22 +23,18 @@
 #include "flavors.h"
 #include "music.h"
 #include "tui.h"
+#include "time.h"
 
 static void *consoleXfb = NULL;
 static void *displayXfb = NULL; // needed so it all draws at once
 
-u64 last_ticks = 0;
 static f64 A = 0, B = 0;
 
-void rotate_donut() {
-	u64 current_ticks = SYS_Time();
-	u64 diff_ticks = current_ticks - last_ticks;
-	last_ticks = current_ticks;
+void rotate_donut(void) {
+	f64 delta = delta_secs();
 
-	f64 delta_time = (f64)diff_ticks / (f64)PPC_TIMER_CLOCK;
-
-	A += 2.8 * delta_time;
-	B += 0.8 * delta_time;
+	A += 2.8 * delta;
+	B += 0.8 * delta;
 	// TODO: Manual donut speed
 
 	A = fmod(A, M_PI * 2);
@@ -145,7 +141,8 @@ int main(int argc, char **argv) {
 
 	u8 showFlavor = 0;
 
-	last_ticks = SYS_Time();
+	time_init();
+
 	while (SYS_MainLoop()) {
 		GX_SetNumChans(1);
 		guVecMultiply(view, &lpos, &lpos);
@@ -161,6 +158,7 @@ int main(int argc, char **argv) {
 		input_down(0, 0);
 
 		music_tick();
+		donut_tick();
 
 		render_frame(
 			A,
@@ -202,6 +200,8 @@ int main(int argc, char **argv) {
 				} else if (BUTTON_START) {
 					currentMenu = MAIN;
 					selected = menuSettings[MAIN].defaultItem;
+				} else if (BUTTON_A) {
+					donutOptions.manual = !donutOptions.manual;
 				}
 				break;
 			case OPTIONS:

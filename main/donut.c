@@ -267,10 +267,6 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual, b
 	if (renderingType)
 		GX_SetChanAmbColor(GX_COLOR0A0, DONUT_LIGHT);
 
-	rainbow_timer = (rainbow_timer + 1) % 48;
-	genRainbowTex(rainbowTex, rainbow_timer, false);
-	genRainbowTex(pastelTex, rainbow_timer, true);
-
 	GX_SetViewport(0,0, DONUT_WIDTH, DONUT_HEIGHT, 0, 1);
 	GX_SetScissor(0,0, DONUT_WIDTH, DONUT_HEIGHT);
 

@@ -1,8 +1,10 @@
 #include <gccore.h>
 #include <math.h>
 #include <grrlib.h>
+#include <ogc/lwp_watchdog.h>
 
 #include "tex.h"
+#include "time.h"
 
 #define GXColor2RGBA(gx) ( (u32)( ( ((u32)(gx.r))        <<24) |  \
 								  ((((u32)(gx.g)) &0xFF) <<16) |  \
@@ -19,8 +21,8 @@
 
 GRRLIB_texImg *whitePixel;
 GRRLIB_texImg *frostingTex;
-GRRLIB_texImg *rainbowTex;
-GRRLIB_texImg *pastelTex;
+GRRLIB_texImg *rainbowTex[60];
+GRRLIB_texImg *pastelTex[60];
 GRRLIB_texImg *metalTex;
 GRRLIB_texImg *flashTex;
 GRRLIB_texImg *tintedMetalTex;
@@ -49,15 +51,17 @@ void set_tex(Donut flavor, bool doSprinkles) {
 	GXTexObj mainTexObj;
 	GRRLIB_texImg *mainTex;
 
+	u64 current_sixtieth = (u64)(((f64)ticks_since_start()/(f64)PPC_TIMER_CLOCK)*60.0) % 60;
+
 	if (flavor.special == FROSTED) {
 		mainTex = frostingTex;
 	} else {
 		switch (flavor.tex) {
 			case RAINBOW:
-				mainTex = rainbowTex;
+				mainTex = rainbowTex[current_sixtieth];
 				break;
 			case PASTEL:
-				mainTex = pastelTex;
+				mainTex = pastelTex[current_sixtieth];
 				break;
 			case METAL:
 				if (GXColor2RGBA(flavor.vertex) == 0xFFFFFFFF) {
@@ -144,40 +148,44 @@ void set_tex(Donut flavor, bool doSprinkles) {
 	GX_LoadTexObj(&sprinklesTexObj, GX_TEXMAP1);
 }
 
-void genRainbowTex(GRRLIB_texImg *tex, u16 t, bool pastel) {
-	const u16 width = tex->w;
-	const u16 height = tex->h;
+static GRRLIB_texImg *genRainbowTex(u16 w, u16 h, u8 t, bool pastel) {
+	const u16 width = w;
+	const u16 height = h;
+
+	GRRLIB_texImg *texOut = GRRLIB_CreateEmptyTexture(w, h);
 
 	const f32 center_x = (width - 1) / 2.0f;
 	const f32 center_y = (height - 1) / 2.0f;
 	const f32 scale = 2.0f / height;
 
+	// Exactly 1 full color cycle (6.0 offset for height=12) spread cleanly across 60 frames
+	const f32 time_offset = ((f32)t / 60.0f) * ((f32)height / 2.0f);
+
 	for (u16 j = 0; j < height; j++) {
-		f32 y = j - center_y;
-		f32 y2 = y*y;
+		const f32 y = j - center_y;
+		const f32 y2 = y * y;
 
 		for (u16 i = 0; i < width; i++) {
-			f32 x = i - center_x;
+			const f32 x = i - center_x;
+			const f32 p = -(sqrtf(x * x + y2) - time_offset) * scale;
+			const u16 mult = pastel ? 510 : 255;
 
-			f32 p = -(sqrtf(x*x + y2) - (f32)t/8.0f)*scale;
+			f32 r = sinf(M_PI * p);
+			f32 g = sinf(M_PI * (p + (1.0f / 3.0f)));
+			f32 b = sinf(M_PI * (p + (2.0f / 3.0f)));
 
-			f32 r = sinf(M_PI*p);
-			f32 g = sinf(M_PI*(p + (1.0f/3.0f)));
-			f32 b = sinf(M_PI*(p + (2.0f/3.0f)));
-
-			u16 mult = pastel ? 510 : 255;
-
-			r *= r*mult;
-			g *= g*mult;
-			b *= b*mult;
+			r *= r * mult;
+			g *= g * mult;
+			b *= b * mult;
 
 			if (r > 255) r = 255;
 			if (g > 255) g = 255;
 			if (b > 255) b = 255;
 
-			GRRLIB_SetPixelTotexImg(i, j, tex, RGBA((u8)r, (u8)g, (u8)b, 255));
+			GRRLIB_SetPixelTotexImg(i, j, texOut, RGBA((u8)r, (u8)g, (u8)b, 255));
 		}
 	}
+	return texOut;
 }
 
 static GRRLIB_texImg *genHoloTex(u16 w, u16 h) {
@@ -239,8 +247,10 @@ static GRRLIB_texImg *genTintedMetalTex() {
 void tex_init(void) {
 	whitePixel = GRRLIB_CreateEmptyTexture(1, 1);
 	frostingTex = GRRLIB_LoadTexturePNG(frosting_png);
-	rainbowTex = GRRLIB_CreateEmptyTexture(12, 12);
-	pastelTex = GRRLIB_CreateEmptyTexture(12, 12);
+	for (u8 i = 0; i < 60; i++) {
+		rainbowTex[i] = genRainbowTex(12, 12, i, false);
+		pastelTex[i] = genRainbowTex(12, 12, i, true);
+	}
 	GRRLIB_SetPixelTotexImg(0, 0, whitePixel, 0xFFFFFFFF);
 	metalTex = GRRLIB_LoadTexturePNG(metal_png);
 	tintedMetalTex = genTintedMetalTex();
@@ -255,8 +265,10 @@ void tex_init(void) {
 void tex_free(void) {
 	GRRLIB_FreeTexture(whitePixel);
 	GRRLIB_FreeTexture(frostingTex);
-	GRRLIB_FreeTexture(rainbowTex);
-	GRRLIB_FreeTexture(pastelTex);
+	for (u8 i = 0; i < 60; i++) {
+		GRRLIB_FreeTexture(rainbowTex[i]);
+		GRRLIB_FreeTexture(pastelTex[i]);
+	}
 	GRRLIB_FreeTexture(metalTex);
 	GRRLIB_FreeTexture(tintedMetalTex);
 	GRRLIB_FreeTexture(spongeTex);
