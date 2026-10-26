@@ -16,8 +16,6 @@
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
 
-static u16 rainbow_timer;
-
 typedef struct {
 	f32 pos0[3];
 	f32 nrm0[3];
