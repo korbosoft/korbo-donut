@@ -1,4 +1,4 @@
-include $(DEVKITPPC)/wii_rules
+include $(DEVKITPRO)/libogc2/wii_rules
 
 BUILD		:=	build-wii
 
