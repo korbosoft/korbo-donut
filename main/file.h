@@ -7,7 +7,7 @@
 typedef struct {
 	char **filenames;
 	int count;
-	int capacity;
+	size_t capacity;
 } FileList;
 
 extern FileList* create_file_list(void);

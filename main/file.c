@@ -9,13 +9,13 @@ int dvmInitResult;
 
 FileList* create_file_list(void) {
 	FileList *list = malloc(sizeof(FileList));
-	if (!list) return NULL;
+	if (!list) return nullptr;
 	list->capacity = 16;
 	list->count = 0;
 	list->filenames = malloc(list->capacity * sizeof(char *));
 	if (!list->filenames) {
 		free(list);
-		return NULL;
+		return nullptr;
 	}
 	return list;
 }
@@ -55,9 +55,9 @@ int file_find(FileList *list, const char *path, const char *pattern, const int f
 	int count = 0;
 	if (dvmInitResult) {
 		DIR *dir = opendir(path);
-		if (dir != NULL) {
+		if (dir != nullptr) {
 			struct dirent *entry;
-			while ((entry = readdir(dir)) != NULL) {
+			while ((entry = readdir(dir)) != nullptr) {
 				if (fnmatch(pattern, entry->d_name, flags) == 0) {
 					if (entry->d_type == DT_DIR)
 						continue;
@@ -86,7 +86,7 @@ FILE *file_open(const char *filename, const char *mode) {
 	if (dvmInitResult) {
 		return fopen(filename, mode);
 	}
-	return NULL;
+	return nullptr;
 }
 
 int file_close(FILE *stream) {

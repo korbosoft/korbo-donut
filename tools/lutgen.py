@@ -71,11 +71,11 @@ if __name__ == "__main__":
     lut = create_ascii_lut(sigs)
     print('saving LUT...')
 
-    with open("shape_lut.bin", "wb") as f:
+    with open("shapeLut.bin", "wb") as f:
         binary_data = struct.pack(f'{len(lut)}B', *lut)
         f.write(binary_data)
 
-    print('LUT saved to shape_lut.bin, making character ramp...')
+    print('LUT saved to shapeLut.bin, making character ramp...')
     densities = []
     for i in range(32, 126):
         on_pixels = sum(bin(byte).count('1') for byte in font[i])

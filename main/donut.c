@@ -2,6 +2,7 @@
 #include <math.h>
 #include <grrlib.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "colors.h"
 #include "donut.h"
@@ -11,7 +12,9 @@
 #include "tex.h"
 #include "text.h"
 
-#include "shape_lut_bin.h"
+const unsigned char shapeLut[] = {
+	#embed "shapeLut.bin"
+};
 
 static GRRLIB_texImg *shapeBuffer;
 static GRRLIB_texImg *donutBuffer;
@@ -321,7 +324,7 @@ void render_frame(f32 A, f32 B, Donut flavor, bool renderingType, bool manual, b
 				if (renderingType) {
 					*ptr++ = ramp[l_avg];
 				} else {
-					*ptr++ = shape_lut_bin[lutIndex];
+					*ptr++ = shapeLut[lutIndex];
 				}
 				nonSpaceCharsPrinted = true;
 			} else {

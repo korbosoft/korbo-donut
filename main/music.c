@@ -10,11 +10,13 @@
 #include "file.h"
 #include "text.h"
 
-#include "music_it.h"
+const unsigned char music[] = {
+	#embed "music.it"
+};
 
 static bool paused = false;
-static u8 *module = NULL;
-static FileList *list = NULL;
+static u8 *module = nullptr;
+static FileList *list = nullptr;
 static char *title_pointer;
 static int currentSong = 0;
 
@@ -30,26 +32,26 @@ static bool is_title_empty(const char *title) {
 }
 
 void music_play(char *filename) {
-	FILE *f = NULL;
+	FILE *f = nullptr;
 	if (filename)
 		f = file_open(filename, "rb");
 
 	if (f) {
 		fseek(f, 0, SEEK_END);
-		long module_size = ftell(f);
+		size_t moduleSize = ftell(f);
 		rewind(f);
 
 		if (module)
 			free(module);
 
-		module = (u8 *)malloc(module_size);
+		module = (u8 *)malloc(moduleSize);
 
-		fread(module, 1, module_size, f);
+		fread(module, 1, moduleSize, f);
 
-		GRRMOD_SetMOD(module,module_size);
+		GRRMOD_SetMOD(module,moduleSize);
 		file_close(f);
 	} else {
-		GRRMOD_SetMOD(music_it, music_it_size);
+		GRRMOD_SetMOD(music, sizeof(music));
 		currentSong = -1;
 	}
 
@@ -72,8 +74,8 @@ void music_init(char *title_display) {
 	if (list->filenames) {
 		if (list->filenames[0]) {
 			music_play(list->filenames[0]);
-		} else { music_play(NULL); }
-	} else { music_play(NULL); }
+		} else { music_play(nullptr); }
+	} else { music_play(nullptr); }
 }
 
 void music_tick() {

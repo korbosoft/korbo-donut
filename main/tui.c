@@ -24,7 +24,7 @@ static MenuResult ret;
 static u8 prevSelected = 0;
 static u8 scroll = 0;
 DonutOptions donutOptions;
-static bool *toggleVar = NULL;
+static bool *toggleVar = nullptr;
 
 MenuSettings menuSettings[MENU_COUNT] = {
 	{0, 0, NOMENU}, // NOMENU (here for spacing)
@@ -151,7 +151,7 @@ static void handle_menu_specific_buttons(Menu *currentMenu, u8 *selected) {
 			return;
 		}
 		MenuActionFn action = menu_actions[*currentMenu][*selected - 1];
-		if (action != NULL) {
+		if (action != nullptr) {
 			action(currentMenu, selected);
 		}
 	}
@@ -356,7 +356,7 @@ void render_flavor_menu(u8 selected) {
 void render_general_menu(Menu menuType, u8 selected) {
 	u8 startX, startY, width, height;
 	u8 itemCount;
-	char **items = NULL;
+	char **items = nullptr;
 	char title[77];
 
 	switch (menuType) {

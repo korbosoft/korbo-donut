@@ -11,13 +11,33 @@
 								  ((((u32)(gx.b)) &0xFF) << 8) |  \
 								  ( ((u32)(gx.a)) &0xFF      ) ) )
 
-#include "frosting_png.h"
-#include "fur_png.h"
-#include "metal_png.h"
-#include "flash_png.h"
-#include "sponge_png.h"
-#include "lsponge_png.h"
-#include "sprinkles_png.h"
+const unsigned char frostingPng[] = {
+	#embed "frosting.png"
+};
+
+const unsigned char furPng[] = {
+	#embed "fur.png"
+};
+
+const unsigned char metalPng[] = {
+	#embed "metal.png"
+};
+
+const unsigned char flashPng[] = {
+	#embed "flash.png"
+};
+
+const unsigned char spongePng[] = {
+	#embed "sponge.png"
+};
+
+const unsigned char lSpongePng[] = {
+	#embed "lSponge.png"
+};
+
+const unsigned char sprinklesPng[] = {
+	#embed "sprinkles.png"
+};
 
 GRRLIB_texImg *whitePixel;
 GRRLIB_texImg *frostingTex;
@@ -37,7 +57,7 @@ GXTexObj sprinklesTexObj;
 GXTexObj init_tex_obj(GRRLIB_texImg *tex) {
 	GXTexObj texObj;
 
-	GX_InitTexObj(&texObj, tex->data, tex->w, tex->h, tex->format, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObj(&texObj, tex->data, tex->w, tex->h, tex->format, GX_REPEAT, GX_REPEAT, GX_TRUE);
 	if (GRRLIB_Settings.antialias == false) {
 		GX_InitTexObjLOD(&texObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
 		GX_SetCopyFilter(GX_FALSE, rmode->sample_pattern, GX_FALSE, rmode->vfilter);
@@ -246,20 +266,20 @@ static GRRLIB_texImg *genTintedMetalTex() {
 
 void tex_init(void) {
 	whitePixel = GRRLIB_CreateEmptyTexture(1, 1);
-	frostingTex = GRRLIB_LoadTexturePNG(frosting_png);
+	frostingTex = GRRLIB_LoadTexturePNG(frostingPng);
 	for (u8 i = 0; i < 60; i++) {
 		rainbowTex[i] = genRainbowTex(12, 12, i, false);
 		pastelTex[i] = genRainbowTex(12, 12, i, true);
 	}
 	GRRLIB_SetPixelTotexImg(0, 0, whitePixel, 0xFFFFFFFF);
-	metalTex = GRRLIB_LoadTexturePNG(metal_png);
+	metalTex = GRRLIB_LoadTexturePNG(metalPng);
 	tintedMetalTex = genTintedMetalTex();
-	spongeTex = GRRLIB_LoadTexturePNG(sponge_png);
-	lSpongeTex = GRRLIB_LoadTexturePNG(lsponge_png);
+	spongeTex = GRRLIB_LoadTexturePNG(spongePng);
+	lSpongeTex = GRRLIB_LoadTexturePNG(lSpongePng);
 	holoTex = genHoloTex(256, 256);
-	sprinklesTex = GRRLIB_LoadTexturePNG(sprinkles_png);
-	furTex = GRRLIB_LoadTexturePNG(fur_png);
-	flashTex = GRRLIB_LoadTexturePNG(flash_png);
+	sprinklesTex = GRRLIB_LoadTexturePNG(sprinklesPng);
+	furTex = GRRLIB_LoadTexturePNG(furPng);
+	flashTex = GRRLIB_LoadTexturePNG(flashPng);
 }
 
 void tex_free(void) {

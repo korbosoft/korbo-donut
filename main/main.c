@@ -25,8 +25,8 @@
 #include "tui.h"
 #include "time.h"
 
-static void *consoleXfb = NULL;
-static void *displayXfb = NULL; // needed so it all draws at once
+static void *consoleXfb = nullptr;
+static void *displayXfb = nullptr; // needed so it all draws at once
 
 static f64 A = 0, B = 0;
 
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 
 	// Initialize the console, required for printf
 	CON_Init(consoleXfb, 8,16, rmode->fbWidth - 8,rmode->xfbHeight, rmode->fbWidth*VI_DISPLAY_PIX_SZ);
-	consoleSetFont(NULL, &(ConsoleFont){(u8*)donut_font_8x16, 0, 256});
+	consoleSetFont(nullptr, &(ConsoleFont){(u8*)donut_font_8x16, 0, 256});
 	//SYS_STDIO_Report(true);
 	VIDEO_SetNextFramebuffer(displayXfb);
 
