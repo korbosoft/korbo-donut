@@ -121,10 +121,10 @@ static const Donut flavors[MAX_FLAVORS] = {
 		NOTEXTURE
 	},
 	{
-		"Toxic Waste",
+		"756 Green",
 		{255, 255, 255, 255},
 		{255, 255, 255, 255},
-		{0, 255, 0, 255},
+		{61, 247, 86, 255},
 		MAPPED,
 		NOTEXTURE
 	},
@@ -319,14 +319,6 @@ static const Donut flavors[MAX_FLAVORS] = {
 		{255, 255, 255, 255},
 		REFLECTIVE,
 		FLASH
-	},
-	{
-		"756 Green",
-		{255, 255, 255, 255},
-		{255, 255, 255, 255},
-		{61, 247, 86, 255},
-		MAPPED,
-		NOTEXTURE
 	}
 };
 
