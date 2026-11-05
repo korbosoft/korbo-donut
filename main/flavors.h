@@ -29,7 +29,7 @@ typedef struct {
 	enum DonutTexture tex;
 } Donut;
 
-#define MAX_FLAVORS 36
+#define MAX_FLAVORS 37
 
 static const Donut flavors[MAX_FLAVORS] = {
 	{
@@ -57,11 +57,11 @@ static const Donut flavors[MAX_FLAVORS] = {
 		NOTEXTURE
 	},
 	{
-		"Purple",
-		{138, 110, 210, 255},
-		{255, 187, 98, 255},
+		"Magenta",
 		{255, 255, 255, 255},
-		FROSTED,
+		{255, 255, 255, 255},
+		{255, 0, 255, 255},
+		MAPPED,
 		NOTEXTURE
 	},
 	{
@@ -130,10 +130,10 @@ static const Donut flavors[MAX_FLAVORS] = {
 	},
 	{
 		"Glazed",
-		{255, 255, 255, 255},
-		{255, 255, 255, 255},
 		{255, 226, 187, 255},
-		MAPPED,
+		{255, 187, 98, 255},
+		{255, 255, 255, 255},
+		FROSTED,
 		NOTEXTURE
 	},
 	{
@@ -319,6 +319,14 @@ static const Donut flavors[MAX_FLAVORS] = {
 		{255, 255, 255, 255},
 		REFLECTIVE,
 		FLASH
+	},
+	{
+		"756 Green",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{61, 247, 86, 255},
+		MAPPED,
+		NOTEXTURE
 	}
 };
 
