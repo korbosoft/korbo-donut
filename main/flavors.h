@@ -17,7 +17,8 @@ enum DonutTexture {
 	LSPONGE,
 	HOLO,
 	FUR,
-	FLASH
+	FLASH,
+	LOGO
 };
 
 typedef struct {
@@ -319,6 +320,14 @@ static const Donut flavors[MAX_FLAVORS] = {
 		{255, 255, 255, 255},
 		REFLECTIVE,
 		FLASH
+	},
+	{
+		"Logo",
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		{255, 255, 255, 255},
+		MAPPED,
+		LOGO
 	}
 };
 

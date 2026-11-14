@@ -35,6 +35,10 @@ const unsigned char lSpongePng[] = {
 	#embed "lSponge.png"
 };
 
+const unsigned char logoPng[] = {
+	#embed "logo.png"
+};
+
 const unsigned char sprinklesPng[] = {
 	#embed "sprinkles.png"
 };
@@ -43,14 +47,15 @@ GRRLIB_texImg *whitePixel;
 GRRLIB_texImg *frostingTex;
 GRRLIB_texImg *rainbowTex[60];
 GRRLIB_texImg *pastelTex[60];
+GRRLIB_texImg *furTex;
 GRRLIB_texImg *metalTex;
 GRRLIB_texImg *flashTex;
 GRRLIB_texImg *tintedMetalTex;
 GRRLIB_texImg *spongeTex;
 GRRLIB_texImg *lSpongeTex;
 GRRLIB_texImg *holoTex;
+GRRLIB_texImg *logoTex;
 GRRLIB_texImg *sprinklesTex;
-GRRLIB_texImg *furTex;
 
 GXTexObj sprinklesTexObj;
 
@@ -104,6 +109,9 @@ void set_tex(Donut flavor, bool doSprinkles) {
 				break;
 			case FLASH:
 				mainTex = flashTex;
+				break;
+			case LOGO:
+				mainTex = logoTex;
 				break;
 			default:
 				mainTex = whitePixel;
@@ -280,6 +288,7 @@ void tex_init(void) {
 	sprinklesTex = GRRLIB_LoadTexturePNG(sprinklesPng);
 	furTex = GRRLIB_LoadTexturePNG(furPng);
 	flashTex = GRRLIB_LoadTexturePNG(flashPng);
+	logoTex = GRRLIB_LoadTexturePNG(logoPng);
 }
 
 void tex_free(void) {
@@ -297,4 +306,5 @@ void tex_free(void) {
 	GRRLIB_FreeTexture(sprinklesTex);
 	GRRLIB_FreeTexture(furTex);
 	GRRLIB_FreeTexture(flashTex);
+	GRRLIB_FreeTexture(logoTex);
 }
